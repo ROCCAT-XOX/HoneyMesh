@@ -1,0 +1,170 @@
+{{ template "header" . }}
+    <style>
+        .sidebar {
+            background-color: #f0f0f0;
+            min-height: 100vh;
+            max-width: fit-content;
+        }
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+        }
+        .sidebar-item i {
+            margin-right: 10px;
+        }
+        .sidebar.collapsed .sidebar-item span {
+            display: none; /* Versteckt den Text in der Sidebar, wenn sie kollabiert ist */
+        }
+        .toggle-button {
+            text-align: left; /* Aligns the toggle button to the left */
+            border: none;
+            background: none;
+            padding: 10px;
+            width: 100%;
+            text-align: left;
+            display: flex;
+            justify-content: center;
+        }
+        .sidebar:not(.collapsed) .toggle-button {
+            justify-content: flex-start; /* Links ausrichten, wenn Sidebar ausgeklappt ist */
+        }
+        .sidebar.collapsed .sidebar-item {
+            justify-content: center; /* Zentriert die Icons in der Sidebar, wenn sie kollabiert ist */
+        }
+        .sidebar.collapsed .sidebar-item i {
+            margin-right: 0; /* Entfernt den Abstand rechts vom Icon in der kollabierten Sidebar */
+        }
+        .sidebar .sidebar-item {
+            justify-content: flex-start; /* Links ausrichten, wenn Sidebar ausgeklappt ist */
+        }
+        body {
+            font-family: 'Montserrat', sans-serif;
+        }
+        .card-custom {
+            background-color: #F3C622;
+        }
+    </style>
+
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-2 sidebar" id="sidebar">
+            <!-- Toggle-Button -->
+            <button class="toggle-button" onclick="toggleSidebar()">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+
+            <!-- Sidebar-Home-->
+            <div class="sidebar-item">
+                <i class="fa-solid fa-house"></i><span>Home</span>
+            </div>
+
+            <!-- Sidebar-Settings -->
+            <div class="sidebar-item">
+                <i class="fa-regular fa-gear"></i><span>Einstellungen</span>
+            </div>
+
+            <!-- Sidebar-Map -->
+            <div class="sidebar-item">
+                <i class="fa-regular fa-map-location-dot"></i><span>Karte</span>
+            </div>
+            <!-- Weitere Icons hier -->
+        </div>
+
+        <!-- Content-Bereich -->
+        <div class="col" id="content">
+            <!-- Navbar -->
+            <nav class="navbar navbar-expand-lg navbar-custom">
+                <div class="container-fluid">
+                    <a class="navbar-brand" href="#">
+                        <i class="fa-duotone fa-bee" style="--fa-primary-color: #f3c622; --fa-secondary-color: #793d00; --fa-secondary-opacity: 0.8;"></i> Overview
+                    </a>
+                    <div class="d-flex align-items-center">
+                        <i class="fa-regular fa-bell"></i>
+                        <img src="/assets/profileExample.png" alt="Profilbild" class="rounded-circle" style="width: 40px; margin-left: 15px;">
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Cards -->
+            <div class="container mt-4">
+                <!-- Erste Reihe von Karten -->
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <div class="card card-custom">
+                            <div class="card-body">
+                                {{.sensorData}}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card card-custom">
+                            <div class="card-body">
+                                <!-- Inhalt der zweiten Karte -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card card-custom">
+                            <div class="card-body">
+                                <!-- Inhalt der dritten Karte -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Zweite Reihe von Karten -->
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="card card-custom">
+                            <div class="card-body">
+                                <!-- Inhalt der vierten Karte -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="card card-custom">
+                            <div class="card-body">
+                                <!-- Inhalt der fünften Karte -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dritte Reihe mit einer großen Karte -->
+                <div class="row">
+                    <div class="col">
+                        <div class="card card-custom">
+                            <div class="card-body">
+                                <!-- Inhalt der großen Karte -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap 5.3.2 JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-DC7CMTK1CRRYK4/VZkVXxg8Jr9aR2Jn1zE+P6B0dznAw2M5f/YQGB1TzhWYn5JP2" crossorigin="anonymous"></script>
+
+<script>
+    function toggleSidebar() {
+        var sidebar = document.getElementById('sidebar');
+
+        if (sidebar.classList.contains('col-2')) {
+            sidebar.classList.remove('col-2');
+            sidebar.classList.add('col-1');
+            sidebar.classList.add('collapsed');
+        } else {
+            sidebar.classList.remove('col-1');
+            sidebar.classList.add('col-2');
+            sidebar.classList.remove('collapsed');
+        }
+    }
+</script>
+{{ template "footer" . }}
