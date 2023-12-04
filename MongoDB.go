@@ -16,6 +16,8 @@ type NodeData struct {
 	Humidity     float64 `json:"humidity"`
 	AirQuality   float64 `json:"airQuality"`
 	WifiStrength float64 `json:"wifiStrength"`
+	Date         string  `json:"date"`
+	Time         string  `json:"time"`
 }
 
 type Data struct {

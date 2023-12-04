@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/mongo"
 	"html/template"
@@ -28,19 +29,22 @@ func Router(client *mongo.Client) *gin.Engine {
 	router.Use(loadSensorData(client))
 
 	router.GET("/", func(c *gin.Context) {
-		sensorData, exists := c.Get("sensorData")
-		if !exists {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Fehler beim Laden der SensorDaten"})
+		analyzedData, err := analyzeSensorData(client)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Fehler bei der Datenanalyse"})
 			return
 		}
-		data, ok := sensorData.([]SensorData)
-		if !ok {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Fehler beim Casten der SensorDaten"})
+
+		jsonData, err := json.Marshal(analyzedData)
+		if err != nil {
+			// Fehlerbehandlung
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Fehler beim Konvertieren der Daten"})
 			return
 		}
+
 		c.HTML(http.StatusOK, "dashboard.html", gin.H{
 			"title":      "HoneyMesh",
-			"sensorData": data,
+			"sensorData": template.JS(jsonData), // Konvertierte JSON-Daten
 		})
 	})
 

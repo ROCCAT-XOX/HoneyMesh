@@ -49,7 +49,14 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	defer client.Disconnect(context.Background())
+
+	// Beispieldaten einfügen
+
+	if err := insertSampleData(client); err != nil {
+		log.Fatal("Fehler beim Einfügen von Beispieldaten: ", err)
+	}
 
 	router := Router(client)
 

@@ -74,7 +74,7 @@
         </div>
 
         <!-- Content-Bereich -->
-        <div class="col" id="content">
+        <div class="col-10" id="content">
             <!-- Navbar -->
             <nav class="navbar navbar-expand-lg navbar-custom">
                 <div class="container-fluid">
@@ -88,6 +88,54 @@
                 </div>
             </nav>
 
+            <div class="row">
+                <div class="col-6">
+                    <select id="nodeSelector"></select>
+                </div>
+                <div class="col-6">
+                    <select id="timeIntervalSelector">
+                        <option value="LastHour">Letzte Stunde</option>
+                        <option value="Last24Hours">Letzte 24 Stunden</option>
+                        <option value="Last7Days">Letzte 7 Tage</option>
+                        <option value="Last30Days">Letzte 30 Tage</option>
+                        <option value="Last90Days">Letzte 90 Tage</option>
+                    </select>
+
+                </div>
+            </div>
+
+
+
+            <div class="row">
+                <div class="col-6">
+                    <div id="tempInChart" style="height: 400px;"></div>
+                </div>
+                <div class="col-6">
+                    <div id="tempOutChart" style=" height: 400px;"></div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-6">
+                    <div id="weightChart" style="height: 400px;"></div>
+                </div>
+                <div class="col-6">
+                    <div id="airQualityChart" style="height: 400px;"></div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-6">
+                    <div id="wifiStrengthChart" style="height: 400px;"></div>
+                </div>
+                <div class="col-6">
+                    <div id="humidityChart" style="height: 400px;"></div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <div id="stackedChart" style="height: 400px;"></div>
+                </div>
+            </div>
+
             <!-- Cards -->
             <div class="container mt-4">
                 <!-- Erste Reihe von Karten -->
@@ -95,7 +143,7 @@
                     <div class="col-md-4 mb-3">
                         <div class="card card-custom">
                             <div class="card-body">
-                                {{.sensorData}}
+
                             </div>
                         </div>
                     </div>
@@ -153,6 +201,13 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-DC7CMTK1CRRYK4/VZkVXxg8Jr9aR2Jn1zE+P6B0dznAw2M5f/YQGB1TzhWYn5JP2" crossorigin="anonymous"></script>
 
 <script>
+    window.onload = function() {
+        populateNodeSelector();
+        updateChartForNode(document.getElementById('nodeSelector').value);
+        createStackedChart(); // Erstellen des gestapelten Diagramms
+        updateChartsForTimeInterval('LastHour'); // oder ein anderes Standardzeitintervall
+    };
+
     function toggleSidebar() {
         var sidebar = document.getElementById('sidebar');
 
@@ -166,5 +221,183 @@
             sidebar.classList.remove('collapsed');
         }
     }
+
+    var sensorData = {{ .sensorData }};
+    console.log(sensorData)
+
+    function populateNodeSelector() {
+        var nodeSelector = document.getElementById('nodeSelector');
+        if (!nodeSelector) return;
+
+        if (sensorData.DataByNode) {
+            Object.keys(sensorData.DataByNode).forEach(function(nodeId) {
+                var option = document.createElement('option');
+                option.value = nodeId;
+                option.text = 'Node ' + nodeId;
+                nodeSelector.appendChild(option);
+            });
+        }
+    }
+
+    function createChart(elementId, title, xData, yData) {
+        var chart = echarts.init(document.getElementById(elementId));
+        var options = {
+            title: { text: title },
+            tooltip: { trigger: 'axis' },
+            xAxis: {
+                type: 'category',
+                boundaryGap: false,
+                data: xData
+            },
+            yAxis: {
+                type: 'value',
+                axisLabel: { formatter: '{value}' }
+            },
+            series: [{
+                data: yData,
+                type: 'line',
+                smooth: true
+            }]
+        };
+        chart.setOption(options);
+    }
+
+    function updateChartForNode(nodeId) {
+        if (sensorData.DataByNode && sensorData.DataByNode[nodeId]) {
+            var lastHourData = sensorData.DataByNode[nodeId].LastHour;
+
+            if (Array.isArray(lastHourData)) {
+                var times = lastHourData.map(function(item) {
+                    return item.time;
+                });
+
+                // Erstellen von Datenarrays für jedes Diagramm
+                var tempInValues = lastHourData.map(function(item) { return item.tempIn || 0; });
+                var tempOutValues = lastHourData.map(function(item) { return item.tempOut || 0; });
+                var weightValues = lastHourData.map(function(item) { return item.weight || 0; });
+                var airQualityValues = lastHourData.map(function(item) { return item.airQuality || 0; });
+                var wifiStrengthValues = lastHourData.map(function(item) { return item.wifiStrength || 0; });
+                var humidityValues = lastHourData.map(function(item) { return item.humidity || 0; });
+
+                console.log(wifiStrengthValues)
+
+                // Erstellen von Diagrammen für jeden Messwert
+                createChart('tempInChart', 'Temperatur Innen (TempIn)', times, tempInValues);
+                createChart('tempOutChart', 'Temperatur Außen (TempOut)', times, tempOutValues);
+                createChart('weightChart', 'Gewicht', times, weightValues);
+                createChart('airQualityChart', 'Luftqualität', times, airQualityValues);
+                createChart('wifiStrengthChart', 'WiFi-Stärke', times, wifiStrengthValues);
+                createChart('humidityChart', 'Feuchtigkeit', times, humidityValues);
+            } else {
+                console.error("LastHour Data ist kein Array oder leer für Node " + nodeId);
+            }
+        } else {
+            console.error("Keine Daten für Node " + nodeId + " gefunden");
+        }
+    }
+
+    function createStackedChart() {
+        var seriesData = [];
+        var times = [];
+        var firstNodeData = true;
+
+        if (sensorData.DataByNode) {
+            Object.keys(sensorData.DataByNode).forEach(function(nodeId) {
+                var nodeData = sensorData.DataByNode[nodeId].LastHour;
+
+                if (Array.isArray(nodeData)) {
+                    var tempInValues = nodeData.map(function(item) { return item.tempIn || 0; });
+
+                    // Für das erste Node, setzen Sie die Zeitwerte
+                    if (firstNodeData) {
+                        times = nodeData.map(function(item) { return item.time; });
+                        firstNodeData = false;
+                    }
+
+                    seriesData.push({
+                        name: 'Node ' + nodeId,
+                        type: 'line',
+                        data: tempInValues,
+                        stack: 'Total',
+                        smooth: true  // Aktivieren der Glättung für die Linien
+                    });
+                }
+            });
+        }
+
+        var chart = echarts.init(document.getElementById('stackedChart'));
+        var options = {
+            title: { text: 'Gestapelte Temperatur Innen (TempIn)' },
+            tooltip: { trigger: 'axis' },
+            xAxis: {
+                type: 'category',
+                boundaryGap: false,
+                data: times
+            },
+            yAxis: {
+                type: 'value',
+                axisLabel: { formatter: '{value} °C' }
+            },
+            series: seriesData
+        };
+        chart.setOption(options);
+    }
+
+
+
+    // Event-Listener für das Dropdown-Menü
+    document.getElementById('nodeSelector').addEventListener('change', function() {
+        updateChartForNode(this.value);
+    });
+
+    function updateChartsForTimeInterval(timeInterval) {
+        var selectedNode = document.getElementById('nodeSelector').value;
+        var timeData = sensorData.DataByNode[selectedNode][timeInterval];
+
+        if (Array.isArray(timeData)) {
+            var xAxisData;
+
+            // Verwenden Sie 'date' für Intervalle von 7 Tagen oder mehr, sonst 'time'
+            if (['Last7Days', 'Last30Days', 'Last90Days'].includes(timeInterval)) {
+                xAxisData = timeData.map(function(item) { return item.date; });
+            } else {
+                xAxisData = timeData.map(function(item) { return item.time; });
+            }
+
+            var tempInValues = timeData.map(function(item) { return item.tempIn || 0; });
+            var tempOutValues = timeData.map(function(item) { return item.tempOut || 0; });
+            var weightValues = timeData.map(function(item) { return item.weight || 0; });
+            var airQualityValues = timeData.map(function(item) { return item.airQuality || 0; });
+            var wifiStrengthValues = timeData.map(function(item) { return item.wifiStrength || 0; });
+            var humidityValues = timeData.map(function(item) { return item.humidity || 0; });
+
+            // Erstellen von Diagrammen für jeden Messwert
+            createChart('tempInChart', 'Temperatur Innen (TempIn)', xAxisData, tempInValues);
+            createChart('tempOutChart', 'Temperatur Außen (TempOut)', xAxisData, tempOutValues);
+            createChart('weightChart', 'Gewicht', xAxisData, weightValues);
+            createChart('airQualityChart', 'Luftqualität', xAxisData, airQualityValues);
+            createChart('wifiStrengthChart', 'WiFi-Stärke', xAxisData, wifiStrengthValues);
+            createChart('humidityChart', 'Feuchtigkeit', xAxisData, humidityValues);
+        } else {
+            console.error("Daten sind kein Array oder leer für Zeitintervall " + timeInterval);
+        }
+    }
+
+
+
+
+    // Event-Listener für das Zeitintervall-Dropdown-Menü
+    document.getElementById('timeIntervalSelector').addEventListener('change', function() {
+        updateChartsForTimeInterval(this.value);
+    });
+
+
+
+
 </script>
+
+
+
+
+
 {{ template "footer" . }}

@@ -13,6 +13,9 @@ func generateRandomSensorData() SensorData {
 	rand.Seed(time.Now().UnixNano())
 	nodeCount := rand.Intn(10) + 1 // 1 bis 10 Nodes
 
+	currentDate := time.Now().Format("2006-01-02")
+	currentTime := time.Now().Format("15:04:05")
+
 	var nodes []NodeData
 	for i := 0; i < nodeCount; i++ {
 		node := NodeData{
@@ -23,26 +26,35 @@ func generateRandomSensorData() SensorData {
 			Humidity:     rand.Float64()*40 + 20, // 20 bis 60
 			AirQuality:   rand.Float64() * 500,   // 0 bis 500
 			WifiStrength: rand.Float64()*80 + 20, // 20 bis 100
+			Date:         currentDate,            // Datum hinzugefügt
+			Time:         currentTime,            // Uhrzeit hinzugefügt
 		}
 		nodes = append(nodes, node)
 	}
 
 	return SensorData{
-		Date: time.Now().Format("2006-01-02"),
-		Time: time.Now().Format("15:04:05"),
+		Date: currentDate,
+		Time: currentTime,
 		Data: Data{Nodes: nodes},
 	}
 }
 
 func insertSampleData(client *mongo.Client) error {
 	collection := client.Database("HoneyMesh").Collection("data")
-	now := time.Now()
 
 	for i := 0; i < 90; i++ { // Für die letzten 90 Tage
+		currentDate := time.Now().AddDate(0, 0, -i).Format("2006-01-02") // Datum für den jeweiligen Tag setzen
+
 		for j := 0; j < 24; j++ { // Für jede Stunde eines Tages
 			sensorData := generateRandomSensorData()
-			sensorData.Date = now.AddDate(0, 0, -i).Format("2006-01-02") // Datum setzen
-			sensorData.Time = fmt.Sprintf("%02d:00:00", j)               // Stunde setzen
+			sensorData.Date = currentDate                  // Datum einsetzen
+			sensorData.Time = fmt.Sprintf("%02d:00:00", j) // Stunde einsetzen
+
+			// Aktualisieren Sie das Datum und die Zeit für jeden Node
+			for k := range sensorData.Data.Nodes {
+				sensorData.Data.Nodes[k].Date = currentDate
+				sensorData.Data.Nodes[k].Time = sensorData.Time
+			}
 
 			_, err := collection.InsertOne(context.Background(), sensorData)
 			if err != nil {
@@ -54,19 +66,23 @@ func insertSampleData(client *mongo.Client) error {
 	return nil
 }
 
-type AnalyzedData struct {
-	LastHour    []SensorData
-	Last24Hours []SensorData
-	Last7Days   []SensorData
-	Last30Days  []SensorData
-	Last90Days  []SensorData
+type NodeAnalyzedData struct {
+	NodeID      string
+	LastHour    []NodeData
+	Last24Hours []NodeData
+	Last7Days   []NodeData
+	Last30Days  []NodeData
+	Last90Days  []NodeData
 }
 
-func analyzeSensorData(client *mongo.Client) (*AnalyzedData, error) {
-	collection := client.Database("HoneyMesh").Collection("data")
-	analyzed := &AnalyzedData{}
+type AllNodesAnalyzedData struct {
+	DataByNode map[string]*NodeAnalyzedData
+}
 
-	// Hilfsfunktion, um Daten für ein bestimmtes Intervall abzufragen
+func analyzeSensorData(client *mongo.Client) (*AllNodesAnalyzedData, error) {
+	collection := client.Database("HoneyMesh").Collection("data")
+	allNodesData := &AllNodesAnalyzedData{DataByNode: make(map[string]*NodeAnalyzedData)}
+
 	fetchDataForInterval := func(duration time.Duration) ([]SensorData, error) {
 		var results []SensorData
 		start := time.Now().Add(-duration)
@@ -89,23 +105,36 @@ func analyzeSensorData(client *mongo.Client) (*AnalyzedData, error) {
 		return results, nil
 	}
 
-	// Abrufen der Daten für jedes Intervall
-	var err error
-	if analyzed.LastHour, err = fetchDataForInterval(1 * time.Hour); err != nil {
-		return nil, err
-	}
-	if analyzed.Last24Hours, err = fetchDataForInterval(24 * time.Hour); err != nil {
-		return nil, err
-	}
-	if analyzed.Last7Days, err = fetchDataForInterval(7 * 24 * time.Hour); err != nil {
-		return nil, err
-	}
-	if analyzed.Last30Days, err = fetchDataForInterval(30 * 24 * time.Hour); err != nil {
-		return nil, err
-	}
-	if analyzed.Last90Days, err = fetchDataForInterval(90 * 24 * time.Hour); err != nil {
-		return nil, err
+	intervals := []time.Duration{1 * time.Hour, 24 * time.Hour, 7 * 24 * time.Hour, 30 * 24 * time.Hour, 90 * 24 * time.Hour}
+	for _, interval := range intervals {
+		sensorData, err := fetchDataForInterval(interval)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, data := range sensorData {
+			for _, nodeData := range data.Data.Nodes {
+				nodeAnalysis := allNodesData.DataByNode[nodeData.NodeID]
+				if nodeAnalysis == nil {
+					nodeAnalysis = &NodeAnalyzedData{NodeID: nodeData.NodeID}
+					allNodesData.DataByNode[nodeData.NodeID] = nodeAnalysis
+				}
+
+				switch interval {
+				case 1 * time.Hour:
+					nodeAnalysis.LastHour = append(nodeAnalysis.LastHour, nodeData)
+				case 24 * time.Hour:
+					nodeAnalysis.Last24Hours = append(nodeAnalysis.Last24Hours, nodeData)
+				case 7 * 24 * time.Hour:
+					nodeAnalysis.Last7Days = append(nodeAnalysis.Last7Days, nodeData)
+				case 30 * 24 * time.Hour:
+					nodeAnalysis.Last30Days = append(nodeAnalysis.Last30Days, nodeData)
+				case 90 * 24 * time.Hour:
+					nodeAnalysis.Last90Days = append(nodeAnalysis.Last90Days, nodeData)
+				}
+			}
+		}
 	}
 
-	return analyzed, nil
+	return allNodesData, nil
 }
