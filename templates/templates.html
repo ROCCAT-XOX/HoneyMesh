@@ -26,6 +26,20 @@
 <body>
 {{ end }}
 
+{{ define "navbar" }}
+<nav class="navbar navbar-expand-lg navbar-custom">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="#">
+      <i class="fa-duotone fa-bee" style="--fa-primary-color: #f3c622; --fa-secondary-color: #793d00; --fa-secondary-opacity: 0.8;"></i> Overview
+    </a>
+    <div class="d-flex align-items-center">
+      <i class="fa-regular fa-bell"></i>
+      <img src="/assets/profileExample.png" alt="Profilbild" class="rounded-circle" style="width: 40px; margin-left: 15px;">
+    </div>
+  </div>
+</nav>
+{{ end }}
+
 <!-- Footer -->
 {{ define "footer" }}
 </body>
