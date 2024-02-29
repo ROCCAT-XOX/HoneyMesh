@@ -52,8 +52,10 @@ func main() {
 
 	defer client.Disconnect(context.Background())
 
-	// Beispieldaten einfügen
+	//
+	//setupPeriodicTask(client)
 
+	// Beispieldaten einfügen
 	if err := insertSampleData(client); err != nil {
 		log.Fatal("Fehler beim Einfügen von Beispieldaten: ", err)
 	}
