@@ -49,32 +49,8 @@
 
 <div class="container-fluid">
     <div class="row">
-        <!-- Sidebar -->
-        <div class="col-2 sidebar" id="sidebar">
-            <!-- Toggle-Button -->
-            <button class="toggle-button" onclick="toggleSidebar()">
-                <i class="fa-solid fa-bars"></i>
-            </button>
-
-            <!-- Sidebar-Home-->
-            <div class="sidebar-item">
-                <i class="fa-solid fa-house"></i><span>Home</span>
-            </div>
-
-            <!-- Sidebar-Settings -->
-            <div class="sidebar-item">
-                <i class="fa-regular fa-gear"></i><span>Einstellungen</span>
-            </div>
-
-            <!-- Sidebar-Map -->
-            <div class="sidebar-item">
-                <i class="fa-regular fa-map-location-dot"></i><span>Karte</span>
-            </div>
-            <!-- Weitere Icons hier -->
-        </div>
-
         <!-- Content-Bereich -->
-        <div class="col-10" id="content">
+        <div class="col-12" id="content">
             <!-- Navbar -->
             {{ template "navbar" . }}
 
@@ -125,64 +101,6 @@
                     <div id="stackedChart" style="height: 400px;"></div>
                 </div>
             </div>
-
-            <!-- Cards -->
-            <div class="container mt-4">
-                <!-- Erste Reihe von Karten -->
-                <div class="row">
-                    <div class="col-md-4 mb-3">
-                        <div class="card card-custom">
-                            <div class="card-body">
-
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <div class="card card-custom">
-                            <div class="card-body">
-                                <!-- Inhalt der zweiten Karte -->
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <div class="card card-custom">
-                            <div class="card-body">
-                                <!-- Inhalt der dritten Karte -->
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Zweite Reihe von Karten -->
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <div class="card card-custom">
-                            <div class="card-body">
-                                <!-- Inhalt der vierten Karte -->
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <div class="card card-custom">
-                            <div class="card-body">
-                                <!-- Inhalt der fünften Karte -->
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Dritte Reihe mit einer großen Karte -->
-                <div class="row">
-                    <div class="col">
-                        <div class="card card-custom">
-                            <div class="card-body">
-                                <!-- Inhalt der großen Karte -->
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
         </div>
     </div>
 </div>
