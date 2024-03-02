@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ .title }}</title>
+</head>
+<body>
+<h1>{{ .title }}</h1>
+{{ range .sensorData }}
+<div>
+    <h2>Sensor ID: {{ .ID.Hex }}</h2>
+    <p>Date: {{ .Date }}, Time: {{ .Time }}</p>
+    <h3>Nodes:</h3>
+    {{ range .Data.Nodes }}
+    <p>NodeID: {{ .NodeID }}, Weight: {{ .Weight }}, TempOut: {{ .TempOut }}, TempIn: {{ .TempIn }}, Humidity: {{ .Humidity }}, AirQuality: {{ .AirQuality }}, WifiStrength: {{ .WifiStrength }}, Date: {{ .Date }}, Time: {{ .Time }}</p>
+    {{ end }}
+</div>
+{{ end }}
+</body>
+</html>
+

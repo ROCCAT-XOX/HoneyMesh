@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/mongo"
 	"html/template"
@@ -15,37 +14,23 @@ func Router(client *mongo.Client) *gin.Engine {
 
 	router.LoadHTMLGlob("templates/*.html")
 	router.Static("/assets", "./assets")
-
 	router.Use(func(c *gin.Context) {
 		if strings.HasPrefix(c.Request.URL.Path, "/assets/") {
 			c.Header("Cache-Control", "public, max-age=86400")
 		}
 	})
-
 	router.SetFuncMap(template.FuncMap{
 		"upper": strings.ToUpper,
 	})
 
-	router.Use(loadSensorData(client))
-
-	router.GET("/", func(c *gin.Context) {
-		analyzedData, err := analyzeSensorData(client)
+	// Route-Handler für verschiedene Zeitfenster
+	router.GET("/data", func(c *gin.Context) {
+		data, err := getFilteredSensorData(client, 3) // Letzte 24 Stunden
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Fehler bei der Datenanalyse"})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
-
-		jsonData, err := json.Marshal(analyzedData)
-		if err != nil {
-			// Fehlerbehandlung
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Fehler beim Konvertieren der Daten"})
-			return
-		}
-
-		c.HTML(http.StatusOK, "dashboard.html", gin.H{
-			"title":      "HoneyMesh",
-			"sensorData": template.JS(jsonData), // Konvertierte JSON-Daten
-		})
+		c.JSON(http.StatusOK, data)
 	})
 
 	router.POST("/submit-data", func(c *gin.Context) {
