@@ -1,11 +1,25 @@
 {{ template "header" . }}
 
 <button onclick="initCharts(1)">Letzte Stunde</button>
+<button onclick="initCharts(12)">Letzte 12 Stunde</button>
 <button onclick="initCharts(24)">Letzte 24 Stunden</button>
 <button onclick="initCharts(48)">Letzte 48 Stunden</button>
+<button onclick="initCharts(168)">Letzte 7 Tage</button>
 
 
 
+{{.weights}}
+{{ if .weights }}
+<ul>
+    {{ range .weights }}
+    <li>NodeID: {{ ._id }}, Gewicht: {{ .latestWeight }}, Datum: {{ .latestDate }}, Zeit: {{ .latestTime }}</li>
+    {{ end }}
+</ul>
+{{ else }}
+<p>Keine Daten verfügbar.</p>
+{{ end }}
+
+<div id="main" style="width: 100%; height: 400px;"></div>
 
 <div id="weightChart" style="height:400px;"></div>
 <div id="tempInChart" style="height:400px;"></div>
@@ -14,8 +28,34 @@
 <div id="wifiStrengthChart" style="height:400px;"></div>
 
 
+
 <script>
+    var weightsData = {{.weights}};
     document.addEventListener("DOMContentLoaded", function() {
+        var myChart = echarts.init(document.getElementById('main'));
+        var option = {
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: { type: 'shadow' }
+            },
+            xAxis: {
+                type: 'category',
+                data: weightsData.map(function(item) { return 'Node ' + item._id; })
+            },
+            yAxis: {
+                type: 'value'
+            },
+            series: [{
+                data: weightsData.map(function(item) { return item.latestWeight; }),
+                type: 'bar'
+            }]
+        };
+        myChart.setOption(option);
+    });
+
+
+
+document.addEventListener("DOMContentLoaded", function() {
         initCharts(24); // Lädt standardmäßig die Daten der letzten 24 Stunden
     });
 
@@ -87,35 +127,6 @@
         myChart.setOption(option);
     }
 
-
-
-    /*
-    function loadData(hours) {
-        fetch(`/data?hours=${hours}`)
-            .then(response => response.json())
-            .then(data => {
-                const display = document.getElementById('dataDisplay');
-                display.innerHTML = ''; // Alte Daten löschen
-
-                // Überprüfen, ob Daten null oder leer sind
-                if (data === null || data.length === 0) {
-                    display.textContent = 'Aktuell keine Werte vorhanden.';
-                } else {
-                    // Daten anzeigen
-                    data.forEach(item => {
-                        const div = document.createElement('div');
-                        div.textContent = JSON.stringify(item); // Einfache Darstellung der Daten
-                        display.appendChild(div);
-                    });
-                }
-            })
-            .catch(error => {
-                console.error('Fehler beim Laden der Daten:', error);
-                // Fehlermeldung im Display-Bereich anzeigen
-                const display = document.getElementById('dataDisplay');
-                display.textContent = 'Fehler beim Laden der Daten.';
-            });
-    }*/
 </script>
 
 {{ template "footer" . }}
