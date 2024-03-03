@@ -22,7 +22,7 @@ func main() {
 			fmt.Println("Fehler beim Einfügen von Sample-Daten:", err)
 			return
 		}
-		fmt.Println("Sample-Daten erfolgreich eingefügt.")
+
 	*/
 
 	router := Router(client)

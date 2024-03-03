@@ -1,20 +1,121 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>{{ .title }}</title>
-</head>
-<body>
-<h1>{{ .title }}</h1>
-{{ range .sensorData }}
-<div>
-    <h2>Sensor ID: {{ .ID.Hex }}</h2>
-    <p>Date: {{ .Date }}, Time: {{ .Time }}</p>
-    <h3>Nodes:</h3>
-    {{ range .Data.Nodes }}
-    <p>NodeID: {{ .NodeID }}, Weight: {{ .Weight }}, TempOut: {{ .TempOut }}, TempIn: {{ .TempIn }}, Humidity: {{ .Humidity }}, AirQuality: {{ .AirQuality }}, WifiStrength: {{ .WifiStrength }}, Date: {{ .Date }}, Time: {{ .Time }}</p>
-    {{ end }}
-</div>
-{{ end }}
-</body>
-</html>
+{{ template "header" . }}
 
+<button onclick="initCharts(1)">Letzte Stunde</button>
+<button onclick="initCharts(24)">Letzte 24 Stunden</button>
+<button onclick="initCharts(48)">Letzte 48 Stunden</button>
+
+
+
+
+<div id="weightChart" style="height:400px;"></div>
+<div id="tempInChart" style="height:400px;"></div>
+<div id="tempOutChart" style=";height:400px;"></div>
+<div id="humidityChart" style="height:400px;"></div>
+<div id="wifiStrengthChart" style="height:400px;"></div>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        initCharts(24); // Lädt standardmäßig die Daten der letzten 24 Stunden
+    });
+
+    function prepareEChartData(data, valueKey) {
+        const series = {};
+        const dates = new Set();
+
+        data.forEach(snapshot => {
+            const timestamp = snapshot.Date + ' ' + snapshot.Time;
+            dates.add(timestamp);
+
+            snapshot.Nodes.forEach(node => {
+                if (!series[node.NodeID]) {
+                    series[node.NodeID] = {
+                        name: 'Node ' + node.NodeID,
+                        type: 'line',
+                        data: [],
+                        smooth: true
+                    };
+                }
+                const value = node[valueKey];
+                if (value !== undefined) {
+                    series[node.NodeID].data.push([timestamp, value]);
+                }
+            });
+        });
+
+        return {
+            series: Object.values(series),
+            xAxisData: Array.from(dates).sort()
+        };
+    }
+
+
+    function initCharts(hours) {
+        loadData(hours, 'Weight', 'weightChart');
+        loadData(hours, 'TempIn', 'tempInChart');
+        loadData(hours, 'TempOut', 'tempOutChart');
+        loadData(hours, 'Humidity', 'humidityChart');
+        loadData(hours, 'WifiStrength', 'wifiStrengthChart');
+    }
+
+    function loadData(hours, valueKey, chartId) {
+        fetch(`/data?hours=${hours}`)
+            .then(response => response.json())
+            .then(data => {
+                if (!data || data.length === 0) {
+                    document.getElementById(chartId).textContent = 'Aktuell keine Werte vorhanden.';
+                } else {
+                    const { series, xAxisData } = prepareEChartData(data, valueKey);
+                    initECharts(series, xAxisData, chartId);
+                }
+            })
+            .catch(error => {
+                console.error('Fehler beim Laden der Daten:', error);
+                document.getElementById(chartId).textContent = 'Fehler beim Laden der Daten.';
+            });
+    }
+
+    function initECharts(seriesData, xAxisData, chartId) {
+        const myChart = echarts.init(document.getElementById(chartId));
+        const option = {
+            tooltip: { trigger: 'axis' },
+            xAxis: { type: 'category', data: xAxisData },
+            yAxis: { type: 'value' },
+            series: seriesData
+        };
+
+        myChart.setOption(option);
+    }
+
+
+
+    /*
+    function loadData(hours) {
+        fetch(`/data?hours=${hours}`)
+            .then(response => response.json())
+            .then(data => {
+                const display = document.getElementById('dataDisplay');
+                display.innerHTML = ''; // Alte Daten löschen
+
+                // Überprüfen, ob Daten null oder leer sind
+                if (data === null || data.length === 0) {
+                    display.textContent = 'Aktuell keine Werte vorhanden.';
+                } else {
+                    // Daten anzeigen
+                    data.forEach(item => {
+                        const div = document.createElement('div');
+                        div.textContent = JSON.stringify(item); // Einfache Darstellung der Daten
+                        display.appendChild(div);
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Fehler beim Laden der Daten:', error);
+                // Fehlermeldung im Display-Bereich anzeigen
+                const display = document.getElementById('dataDisplay');
+                display.textContent = 'Fehler beim Laden der Daten.';
+            });
+    }*/
+</script>
+
+{{ template "footer" . }}
