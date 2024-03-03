@@ -52,8 +52,23 @@ func Router(client *mongo.Client) *gin.Engine {
 	})
 
 	router.GET("/test", func(c *gin.Context) {
+
+		weights, err := getLatestWeightForEachNode(client, 24) // Beispiel: Daten der letzten 24 Stunden
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
 		c.HTML(http.StatusOK, "test.html", gin.H{
-			"title": "Meine Testseite",
+			"title":   "Meine Testseite",
+			"weights": weights,
+		})
+	})
+
+	router.GET("/login", func(c *gin.Context) {
+
+		c.HTML(http.StatusOK, "login.html", gin.H{
+			"title": "Login",
 		})
 	})
 
