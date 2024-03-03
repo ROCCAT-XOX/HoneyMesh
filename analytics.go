@@ -124,7 +124,7 @@ func getFilteredSensorData(client *mongo.Client, hours int) ([]SensorData, error
 	}
 	options := options.Find().SetSort(bson.D{{"date", 1}, {"time", 1}})
 
-	var results []SensorData
+	var weights []SensorData
 	cursor, err := collection.Find(ctx, filter, options)
 	if err != nil {
 		return nil, err
@@ -143,11 +143,45 @@ func getFilteredSensorData(client *mongo.Client, hours int) ([]SensorData, error
 			continue
 		}
 		if sensorDateTime.After(targetTime) {
-			results = append(results, sensorData)
+			weights = append(weights, sensorData)
 		}
 	}
 
 	if err := cursor.Err(); err != nil {
+		return nil, err
+	}
+
+	return weights, nil
+}
+
+func getLatestWeightForEachNode(client *mongo.Client, hours int) ([]bson.M, error) {
+	collection := client.Database("HoneyMesh").Collection("data")
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	// Berechnen der Zeit für die letzten X Stunden, basierend auf dem Parameter
+	targetTime := time.Now().Add(time.Duration(-hours) * time.Hour)
+
+	// Aggregations-Pipeline
+	pipeline := mongo.Pipeline{
+		{{"$match", bson.M{"date": bson.M{"$gte": targetTime.Format("2006-01-02")}}}},
+		{{"$unwind", "$nodes"}},
+		{{"$sort", bson.D{{"nodes.nodeid", 1}, {"date", -1}, {"time", -1}}}},
+		{{"$group", bson.M{
+			"_id":          "$nodes.nodeid",
+			"latestWeight": bson.M{"$first": "$nodes.weight"},
+			"latestDate":   bson.M{"$first": "$date"},
+			"latestTime":   bson.M{"$first": "$time"},
+		}}},
+		{{"$sort", bson.D{{"_id", 1}}}}, // Sortiert die Ergebnisse nach der NodeID in aufsteigender Reihenfolge
+	}
+
+	var results []bson.M
+	cursor, err := collection.Aggregate(ctx, pipeline)
+	if err != nil {
+		return nil, err
+	}
+	if err = cursor.All(ctx, &results); err != nil {
 		return nil, err
 	}
 
