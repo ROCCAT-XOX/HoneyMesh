@@ -3,7 +3,9 @@ package main
 import (
 	"context"
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"golang.org/x/crypto/bcrypt"
 	"html/template"
 	"net/http"
 	"strconv"
@@ -24,8 +26,35 @@ func Router(client *mongo.Client) *gin.Engine {
 		"upper": strings.ToUpper,
 	})
 
-	// Route-Handler für verschiedene Zeitfenster
-	router.GET("/data", func(c *gin.Context) {
+	/*
+		// Route-Handler für verschiedene Zeitfenster
+		router.GET("/data", func(c *gin.Context) {
+			// Abfrageparameter "hours" aus der URL abrufen
+			hoursStr := c.Query("hours")
+
+			// Standardwert für die Stunden festlegen, falls nicht angegeben
+			hours := 24 // Standardwert
+
+			// Versuchen, die Stunden aus dem Abfrageparameter zu parsen
+			if hoursStr != "" {
+				parsedHours, err := strconv.Atoi(hoursStr)
+				if err != nil {
+					c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid value for 'hours' parameter"})
+					return
+				}
+				hours = parsedHours
+			}
+
+			// Daten mit der entsprechenden Anzahl von Stunden abrufen
+			data, err := getFilteredSensorData(client, hours)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				return
+			}
+			c.JSON(http.StatusOK, data)
+		})
+	*/
+	router.GET("/data", AuthRequired(), func(c *gin.Context) {
 		// Abfrageparameter "hours" aus der URL abrufen
 		hoursStr := c.Query("hours")
 
@@ -51,8 +80,8 @@ func Router(client *mongo.Client) *gin.Engine {
 		c.JSON(http.StatusOK, data)
 	})
 
-	router.GET("/test", func(c *gin.Context) {
-		weights, err := getLatestWeightForEachNode(client, 24) // Beispiel: Daten der letzten 24 Stunden
+	router.GET("/test", AuthRequired(), func(c *gin.Context) {
+		weights, err := getLatestWeightForEachNode(client) // Beispiel: Daten der letzten 24 Stunden
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
@@ -67,6 +96,26 @@ func Router(client *mongo.Client) *gin.Engine {
 		c.HTML(http.StatusOK, "login.html", gin.H{
 			"title": "Login",
 		})
+	})
+
+	router.POST("/login", func(c *gin.Context) {
+		username := c.PostForm("email") // Verwenden Sie c.PostForm, um die Formulardaten zu erhalten
+		password := c.PostForm("password")
+
+		var user User
+		collection := client.Database("HoneyMesh").Collection("users")
+		if err := collection.FindOne(context.Background(), bson.M{"username": username}).Decode(&user); err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Benutzername oder Passwort falsch"})
+			return
+		}
+
+		if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Benutzername oder Passwort falsch"})
+			return
+		}
+
+		// Authentifizierung erfolgreich, Weiterleitung zu /test
+		c.Redirect(http.StatusSeeOther, "/test")
 	})
 
 	router.POST("/submit-data", func(c *gin.Context) {

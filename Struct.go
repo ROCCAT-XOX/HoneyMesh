@@ -17,3 +17,8 @@ type NodeData struct {
 	Date         string  `bson:"date"`
 	Time         string  `bson:"time"`
 }
+
+type User struct {
+	Username string `bson:"username"`
+	Password string `bson:"password"` // Hinweis: In einer Produktionsumgebung sollte das Passwort gehasht gespeichert werden
+}
