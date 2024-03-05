@@ -10,7 +10,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	defer client.Disconnect(context.Background())
 
 	//setupPeriodicTask(client)
@@ -23,6 +22,14 @@ func main() {
 			return
 		}
 
+	*/
+
+	// Erstellen eines neuen Nutzers
+	/*
+		err = createUser(client, "admin@admin.de", "admin")
+		if err != nil {
+			log.Fatal(err)
+		}
 	*/
 
 	router := Router(client)
