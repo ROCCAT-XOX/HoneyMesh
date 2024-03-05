@@ -154,26 +154,26 @@ func getFilteredSensorData(client *mongo.Client, hours int) ([]SensorData, error
 	return weights, nil
 }
 
-func getLatestWeightForEachNode(client *mongo.Client, hours int) ([]bson.M, error) {
+func getLatestWeightForEachNode(client *mongo.Client) ([]bson.M, error) {
 	collection := client.Database("HoneyMesh").Collection("data")
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	// Berechnen der Zeit für die letzten X Stunden, basierend auf dem Parameter
-	targetTime := time.Now().Add(time.Duration(-hours) * time.Hour)
-
 	// Aggregations-Pipeline
 	pipeline := mongo.Pipeline{
-		{{"$match", bson.M{"date": bson.M{"$gte": targetTime.Format("2006-01-02")}}}},
+		// Schritt 1: Dekonstruiere das Array 'nodes', um mit einzelnen Nodes arbeiten zu können
 		{{"$unwind", "$nodes"}},
-		{{"$sort", bson.D{{"nodes.nodeid", 1}, {"date", -1}, {"time", -1}}}},
+		// Schritt 2: Sortiere die Dokumente absteigend nach Datum und Zeit, um den neuesten Eintrag zuerst zu haben
+		{{"$sort", bson.D{{"date", -1}, {"time", -1}}}},
+		// Schritt 3: Gruppiere die Dokumente nach 'nodeid', und nimm den ersten (also neuesten) Eintrag für jedes Node
 		{{"$group", bson.M{
 			"_id":          "$nodes.nodeid",
 			"latestWeight": bson.M{"$first": "$nodes.weight"},
 			"latestDate":   bson.M{"$first": "$date"},
 			"latestTime":   bson.M{"$first": "$time"},
 		}}},
-		{{"$sort", bson.D{{"_id", 1}}}}, // Sortiert die Ergebnisse nach der NodeID in aufsteigender Reihenfolge
+		// Optional: Sortiere die Ergebnisse nach NodeID in aufsteigender Reihenfolge, falls benötigt
+		{{"$sort", bson.D{{"_id", 1}}}},
 	}
 
 	var results []bson.M
