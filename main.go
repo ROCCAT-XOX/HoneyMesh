@@ -12,6 +12,25 @@ func main() {
 	}
 	defer client.Disconnect(context.Background())
 
+	// Überprüfen, ob die User-Collection existiert und Benutzer enthält
+	userColExists, err := ensureUserCollectionExists(client)
+	if err != nil {
+		log.Fatalf("Fehler bei der Prüfung der User-Collection: %v", err)
+	}
+	var redirectToFirstLogin bool
+	if userColExists {
+		userExists, err := userExists(client)
+		if err != nil {
+			log.Fatalf("Fehler bei der Überprüfung auf vorhandene Benutzer: %v", err)
+		}
+		redirectToFirstLogin = !userExists // Umleitung zu /first-login, wenn keine Benutzer vorhanden sind
+	} else {
+		redirectToFirstLogin = true // Umleitung zu /first-login, wenn die Collection neu erstellt wurde
+	}
+
+	router := Router(client, redirectToFirstLogin)
+	router.Run(":8080")
+
 	//setupPeriodicTask(client)
 
 	// Beispieldaten einfügen
@@ -23,17 +42,5 @@ func main() {
 		}
 
 	*/
-
-	// Erstellen eines neuen Nutzers
-	/*
-		err = createUser(client, "admin@admin.de", "admin")
-		if err != nil {
-			log.Fatal(err)
-		}
-	*/
-
-	router := Router(client)
-
-	router.Run(":8080")
 
 }
