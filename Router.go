@@ -154,21 +154,19 @@ func Router(client *mongo.Client, redirectToFirstLogin bool) *gin.Engine {
 		}
 	})
 	router.GET("/dashboard", AuthRequired(), func(c *gin.Context) {
-		c.HTML(http.StatusOK, "dashboard.html", gin.H{
-			"title": "Dashboard",
-		})
-	})
-	router.GET("/home", AuthRequired(), func(c *gin.Context) {
-
 		weights, err := getLatestWeightForEachNode(client) // Beispiel: Daten der letzten 24 Stunden
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
-
-		c.HTML(http.StatusOK, "home.html", gin.H{
-			"title":   "Home",
+		c.HTML(http.StatusOK, "dashboard.html", gin.H{
+			"title":   "Dashboard",
 			"weights": weights,
+		})
+	})
+	router.GET("/home", AuthRequired(), func(c *gin.Context) {
+		c.HTML(http.StatusOK, "home.html", gin.H{
+			"title": "Home",
 		})
 	})
 	// Login
