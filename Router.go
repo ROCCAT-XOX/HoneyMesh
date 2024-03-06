@@ -2,17 +2,20 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
 	"html/template"
+	"log"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 )
 
-func Router(client *mongo.Client) *gin.Engine {
+func Router(client *mongo.Client, redirectToFirstLogin bool) *gin.Engine {
 	router := gin.Default()
 
 	router.LoadHTMLGlob("templates/*.html")
@@ -54,25 +57,108 @@ func Router(client *mongo.Client) *gin.Engine {
 		}
 		c.JSON(http.StatusOK, data)
 	})
-	/*
-		router.GET("/test", AuthRequired(), func(c *gin.Context) {
-			weights, err := getLatestWeightForEachNode(client) // Beispiel: Daten der letzten 24 Stunden
-			if err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-				return
-			}
-			c.HTML(http.StatusOK, "test.html", gin.H{
-				"title":   "Meine Testseite",
-				"weights": weights,
+	// User-Control
+	router.GET("/user", AuthRequired(), func(c *gin.Context) {
+		users, err := getAllUsers(client) // `client` ist dein MongoDB-Client
+		if err != nil {
+			// Behandle den Fehler angemessen
+			c.HTML(http.StatusInternalServerError, "error.html", gin.H{
+				"message": "Fehler beim Laden der Nutzer",
 			})
-		})*/
+			return
+		}
+		message := c.Query("message") // Erhält den Query-Parameter "message"
+		c.HTML(http.StatusOK, "user.html", gin.H{
+			"title":   "User",
+			"message": message,
+			"users":   users, // Übergebe die Nutzerliste an das Template
+		})
+	})
 
-	router.GET("/dashboard", func(c *gin.Context) {
+	router.POST("/create-user", func(c *gin.Context) {
+		username := c.PostForm("username")
+		password := c.PostForm("password")
+		confirmPassword := c.PostForm("confirmPassword")
+		origin := c.PostForm("origin")
+
+		// Überprüfen, ob die Passwörter übereinstimmen
+		if password != confirmPassword {
+			message := "Die Passwörter stimmen nicht überein."
+			// Weiterleitung mit Fehlermeldung
+			redirectURL := "/user"
+			if origin == "first-login" {
+				redirectURL = "/first-login"
+			}
+			c.Redirect(http.StatusSeeOther, redirectURL+"?error="+url.QueryEscape(message))
+			return
+		}
+
+		// Versuch, den Nutzer zu erstellen
+		err := createUser(client, username, password)
+		if err != nil {
+			fmt.Println("Fehler beim Erstellen des Nutzers:", err)
+			// Weiterleitung mit Fehlermeldung
+			redirectURL := "/user"
+			if origin == "first-login" {
+				redirectURL = "/first-login"
+			}
+			c.Redirect(http.StatusSeeOther, redirectURL+"?error="+url.QueryEscape("Fehler beim Erstellen des Nutzers"))
+			return
+		}
+
+		// Weiterleitung nach dem Erstellen des Nutzers
+		if origin == "first-login" {
+			// Umleitung zu /login nach der Erstellung des ersten Nutzers
+			c.Redirect(http.StatusSeeOther, "/login")
+		} else {
+			// Umleitung zu /user mit einer Erfolgsmeldung
+			c.Redirect(http.StatusSeeOther, "/user?message="+url.QueryEscape("User erfolgreich erstellt"))
+		}
+	})
+	router.GET("/first-login", func(c *gin.Context) {
+		exists, err := userExists(client)
+		if err != nil {
+			// Fehlerbehandlung, z.B. Logging und Anzeigen eines Fehlers
+			log.Printf("Fehler beim Überprüfen der Benutzerexistenz: %v", err)
+			c.HTML(http.StatusInternalServerError, "error.html", gin.H{"message": "Interner Serverfehler"})
+			return
+		}
+		if exists {
+			// Wenn bereits Benutzer existieren, Umleitung zu /login oder einer anderen Seite
+			c.Redirect(http.StatusFound, "/login")
+		} else {
+			// Ansonsten die Seite first-login anzeigen
+			c.HTML(http.StatusOK, "first-login.html", gin.H{"title": "Erste Anmeldung"})
+		}
+	})
+	// Normal Route
+	router.GET("/", func(c *gin.Context) {
+		// Überprüfen, ob Benutzer in der Datenbank existieren
+		userExists, err := userExists(client)
+		if err != nil {
+			// Fehlerbehandlung, z.B. Loggen des Fehlers und Senden einer Fehlermeldung
+			log.Printf("Fehler bei der Überprüfung auf vorhandene Benutzer: %v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Interner Serverfehler"})
+			return
+		}
+
+		if !userExists {
+			// Keine Benutzer vorhanden, umleiten auf /first-login
+			c.Redirect(http.StatusTemporaryRedirect, "/first-login")
+		} else if isUserAuthenticated(c) {
+			// Benutzer ist authentifiziert und es existieren Benutzer, umleiten auf /home
+			c.Redirect(http.StatusTemporaryRedirect, "/home")
+		} else {
+			// Benutzer ist nicht authentifiziert, umleiten auf /login
+			c.Redirect(http.StatusTemporaryRedirect, "/login")
+		}
+	})
+	router.GET("/dashboard", AuthRequired(), func(c *gin.Context) {
 		c.HTML(http.StatusOK, "dashboard.html", gin.H{
 			"title": "Dashboard",
 		})
 	})
-	router.GET("/home", func(c *gin.Context) {
+	router.GET("/home", AuthRequired(), func(c *gin.Context) {
 
 		weights, err := getLatestWeightForEachNode(client) // Beispiel: Daten der letzten 24 Stunden
 		if err != nil {
@@ -92,37 +178,38 @@ func Router(client *mongo.Client) *gin.Engine {
 		})
 	})
 	router.POST("/login", func(c *gin.Context) {
-		username := c.PostForm("email") // Verwenden Sie c.PostForm, um die Formulardaten zu erhalten
+		username := c.PostForm("user")
 		password := c.PostForm("password")
 
 		var user User
 		collection := client.Database("HoneyMesh").Collection("users")
-		if err := collection.FindOne(context.Background(), bson.M{"username": username}).Decode(&user); err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Benutzername oder Passwort falsch"})
+		err := collection.FindOne(context.Background(), bson.M{"username": username}).Decode(&user)
+		if err != nil || bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)) != nil {
+			// Hier setzen wir die Fehlermeldung und rendern die Login-Seite erneut
+			c.HTML(http.StatusOK, "login.html", gin.H{
+				"title": "Login",
+				"error": "Benutzername oder Passwort falsch",
+			})
 			return
 		}
 
-		if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Benutzername oder Passwort falsch"})
-			return
-		}
-		// Generieren eines sicheren Tokens
-		sessionToken, err := GenerateSecureToken(32) // 32 Byte sind eine gute Wahl
+		sessionToken, err := GenerateSecureToken(32)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Fehler bei der Token-Generierung"})
+			c.HTML(http.StatusOK, "login.html", gin.H{
+				"title": "Login",
+				"error": "Fehler bei der Token-Generierung",
+			})
 			return
 		}
 
-		// Token global speichern (Für Demonstrationszwecke, in der Praxis in einer DB speichern)
 		globalSessionToken = sessionToken
-
-		// Cookie setzen
-		maxAge := 3600 // 1 Stunde
+		maxAge := 3600
 		c.SetCookie("session_token", sessionToken, maxAge, "/", "", false, true)
-		c.Redirect(http.StatusSeeOther, "/test")
+		c.Redirect(http.StatusSeeOther, "/home")
 	})
+
 	// Logout
-	router.GET("/logout", func(c *gin.Context) {
+	router.GET("/logout", AuthRequired(), func(c *gin.Context) {
 		// Löschen des Session-Cookies, Anpassung für lokale Entwicklung
 		c.SetCookie("session_token", "", -1, "/", "", false, true)
 		c.Redirect(http.StatusSeeOther, "/login")
