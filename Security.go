@@ -1,19 +1,30 @@
 package main
 
 import (
+	"crypto/rand"
+	"encoding/base64"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
-// Diese Funktion ist nur ein Platzhalter. In einer echten Anwendung würden Sie hier eine tatsächliche Authentifizierungsprüfung durchführen.
-func isUserAuthenticated(c *gin.Context) bool {
-	// Beispiel: Prüfen, ob ein Session-Cookie vorhanden ist
-	// _, err := c.Cookie("session_token")
-	// return err == nil
+// Globale Variable für Demonstration; In Produktionscode durch Datenbankspeicherung ersetzen
+var globalSessionToken string
 
-	// Für dieses Beispiel geben wir einfach true zurück, um anzudeuten, dass der Benutzer authentifiziert ist.
-	// Ersetzen Sie dies durch Ihre eigene Logik.
-	return true
+func GenerateSecureToken(length int) (string, error) {
+	token := make([]byte, length)
+	_, err := rand.Read(token)
+	if err != nil {
+		// Ein Fehler trat während der Generierung auf
+		return "", err
+	}
+
+	// Konvertiert den Byte-Slice in eine Base64-kodierte Zeichenkette
+	return base64.URLEncoding.EncodeToString(token), nil
+}
+
+func isUserAuthenticated(c *gin.Context) bool {
+	sessionToken, err := c.Cookie("session_token")
+	return err == nil && sessionToken == globalSessionToken
 }
 
 func AuthRequired() gin.HandlerFunc {

@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -89,10 +88,26 @@ func Router(client *mongo.Client) *gin.Engine {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Benutzername oder Passwort falsch"})
 			return
 		}
+		// Generieren eines sicheren Tokens
+		sessionToken, err := GenerateSecureToken(32) // 32 Byte sind eine gute Wahl
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Fehler bei der Token-Generierung"})
+			return
+		}
 
-		// Authentifizierung erfolgreich, Weiterleitung zu /test
+		// Token global speichern (Für Demonstrationszwecke, in der Praxis in einer DB speichern)
+		globalSessionToken = sessionToken
+
+		// Cookie setzen
+		maxAge := 3600 // 1 Stunde
+		c.SetCookie("session_token", sessionToken, maxAge, "/", "", false, true)
 		c.Redirect(http.StatusSeeOther, "/test")
-		fmt.Println("Erfolgreich Angemeldet")
+	})
+
+	router.GET("/logout", func(c *gin.Context) {
+		// Löschen des Session-Cookies, Anpassung für lokale Entwicklung
+		c.SetCookie("session_token", "", -1, "/", "", false, true)
+		c.Redirect(http.StatusSeeOther, "/login")
 	})
 
 	router.POST("/submit-data", func(c *gin.Context) {
