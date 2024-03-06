@@ -25,14 +25,14 @@ func Router(client *mongo.Client) *gin.Engine {
 	router.SetFuncMap(template.FuncMap{
 		"upper": strings.ToUpper,
 	})
-
+	// 404 Error Handler
 	router.NoRoute(func(c *gin.Context) {
 		c.HTML(http.StatusNotFound, "404.html", gin.H{
 			"title": "Seite nicht gefunden",
 		})
 	})
-
-	router.GET("/data", AuthRequired(), func(c *gin.Context) {
+	// API
+	router.GET("/data", func(c *gin.Context) {
 		// Abfrageparameter "hours" aus der URL abrufen
 		hoursStr := c.Query("hours")
 		// Standardwert für die Stunden festlegen, falls nicht angegeben
@@ -54,25 +54,43 @@ func Router(client *mongo.Client) *gin.Engine {
 		}
 		c.JSON(http.StatusOK, data)
 	})
+	/*
+		router.GET("/test", AuthRequired(), func(c *gin.Context) {
+			weights, err := getLatestWeightForEachNode(client) // Beispiel: Daten der letzten 24 Stunden
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				return
+			}
+			c.HTML(http.StatusOK, "test.html", gin.H{
+				"title":   "Meine Testseite",
+				"weights": weights,
+			})
+		})*/
 
-	router.GET("/test", AuthRequired(), func(c *gin.Context) {
+	router.GET("/dashboard", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "dashboard.html", gin.H{
+			"title": "Dashboard",
+		})
+	})
+	router.GET("/home", func(c *gin.Context) {
+
 		weights, err := getLatestWeightForEachNode(client) // Beispiel: Daten der letzten 24 Stunden
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
-		c.HTML(http.StatusOK, "test.html", gin.H{
-			"title":   "Meine Testseite",
+
+		c.HTML(http.StatusOK, "home.html", gin.H{
+			"title":   "Home",
 			"weights": weights,
 		})
 	})
-
+	// Login
 	router.GET("/login", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "login.html", gin.H{
 			"title": "Login",
 		})
 	})
-
 	router.POST("/login", func(c *gin.Context) {
 		username := c.PostForm("email") // Verwenden Sie c.PostForm, um die Formulardaten zu erhalten
 		password := c.PostForm("password")
@@ -103,13 +121,13 @@ func Router(client *mongo.Client) *gin.Engine {
 		c.SetCookie("session_token", sessionToken, maxAge, "/", "", false, true)
 		c.Redirect(http.StatusSeeOther, "/test")
 	})
-
+	// Logout
 	router.GET("/logout", func(c *gin.Context) {
 		// Löschen des Session-Cookies, Anpassung für lokale Entwicklung
 		c.SetCookie("session_token", "", -1, "/", "", false, true)
 		c.Redirect(http.StatusSeeOther, "/login")
 	})
-
+	// Add Data to DB over ESP32S
 	router.POST("/submit-data", func(c *gin.Context) {
 		var sensorData SensorData
 		if err := c.BindJSON(&sensorData); err != nil {
