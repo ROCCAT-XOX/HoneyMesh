@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
@@ -27,4 +28,23 @@ func connectToMongo() (*mongo.Client, error) {
 
 	log.Println("Erfolgreich mit MongoDB verbunden.")
 	return client, nil
+}
+
+func ensureUserCollectionExists(client *mongo.Client) (bool, error) {
+	db := client.Database("HoneyMesh")
+	collections, err := db.ListCollectionNames(context.Background(), bson.D{})
+	if err != nil {
+		return false, err
+	}
+	for _, collectionName := range collections {
+		if collectionName == "users" {
+			return true, nil // Collection existiert bereits
+		}
+	}
+	// Collection existiert nicht, also erstellen
+	err = db.CreateCollection(context.Background(), "users")
+	if err != nil {
+		return false, err
+	}
+	return false, nil // Collection wurde neu erstellt
 }
