@@ -11,6 +11,14 @@ func main() {
 		log.Fatal(err)
 	}
 	defer client.Disconnect(context.Background())
+	/*
+		err = insertSampleData(client)
+		if err != nil {
+			fmt.Println("Fehler beim Einfügen von Sample-Daten:", err)
+			return
+		}
+
+	*/
 
 	// Überprüfen, ob die User-Collection existiert und Benutzer enthält
 	userColExists, err := ensureUserCollectionExists(client)
@@ -34,13 +42,5 @@ func main() {
 	//setupPeriodicTask(client)
 
 	// Beispieldaten einfügen
-	/*
-		err = insertSampleData(client)
-		if err != nil {
-			fmt.Println("Fehler beim Einfügen von Sample-Daten:", err)
-			return
-		}
-
-	*/
 
 }
