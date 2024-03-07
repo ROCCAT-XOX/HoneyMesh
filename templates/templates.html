@@ -7,7 +7,6 @@
   <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png">
-
   <link rel="mask-icon" href="/assets/safari-pinned-tab.svg" color="#5bbad5">
   <meta name="msapplication-TileColor" content="#da532c">
   <meta name="theme-color" content="#ffffff">
@@ -19,8 +18,13 @@
   <script src="https://kit.fontawesome.com/32215a5137.js" crossorigin="anonymous"></script>
   <!-- Apache ECharts -->
   <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
-
+  <!-- CSS Shadow -->
+  <link href="/assets/styles/shadows.css" rel="stylesheet">
+  <!-- Font -->
   <link href='https://fonts.googleapis.com/css?family=Montserrat' rel='stylesheet'>
+  <!-- Moment JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+
 </head>
 <body>
 {{ end }}
@@ -39,16 +43,13 @@
       </li>
       <li>
         <a href="/dashboard" class="nav-link align-middle px-0">
-          <i class="fa-regular fa-chart-simple" style="color: #FFD43B;"></i> <span class="ms-1 d-none d-sm-inline">Dashboard</span>
+          <i class="fa-regular fa-chart-simple" style="color: #FFD43B;"></i> <span class="ms-1 d-none d-sm-inline">Chart</span>
         </a>
-        <!--<ul class="collapse show nav flex-column ms-1" id="submenu1" data-bs-parent="#menu">
-            <li class="w-100">
-                <a href="#" class="nav-link px-0"> <span class="d-none d-sm-inline">Item</span> 1 </a>
-            </li>
-            <li>
-                <a href="#" class="nav-link px-0"> <span class="d-none d-sm-inline">Item</span> 2 </a>
-            </li>
-        </ul>-->
+      </li>
+      <li>
+        <a href="/weather" class="nav-link align-middle px-0">
+          <i class="fa-regular fa-sun-cloud" style="color: #FFD43B;"></i> <span class="ms-1 d-none d-sm-inline">Wetter</span>
+        </a>
       </li>
       <!--
       <li>
