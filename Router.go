@@ -74,7 +74,6 @@ func Router(client *mongo.Client, redirectToFirstLogin bool) *gin.Engine {
 			"users":   users, // Übergebe die Nutzerliste an das Template
 		})
 	})
-
 	router.POST("/create-user", func(c *gin.Context) {
 		username := c.PostForm("username")
 		password := c.PostForm("password")
@@ -153,6 +152,11 @@ func Router(client *mongo.Client, redirectToFirstLogin bool) *gin.Engine {
 			c.Redirect(http.StatusTemporaryRedirect, "/login")
 		}
 	})
+	router.GET("/home", AuthRequired(), func(c *gin.Context) {
+		c.HTML(http.StatusOK, "home.html", gin.H{
+			"title": "Home",
+		})
+	})
 	router.GET("/dashboard", AuthRequired(), func(c *gin.Context) {
 		weights, err := getLatestWeightForEachNode(client) // Beispiel: Daten der letzten 24 Stunden
 		if err != nil {
@@ -164,11 +168,20 @@ func Router(client *mongo.Client, redirectToFirstLogin bool) *gin.Engine {
 			"weights": weights,
 		})
 	})
-	router.GET("/home", AuthRequired(), func(c *gin.Context) {
-		c.HTML(http.StatusOK, "home.html", gin.H{
-			"title": "Home",
+	router.GET("/weather", AuthRequired(), func(c *gin.Context) {
+		weatherData, err := fetchWeatherData()
+		if err != nil {
+			// Fehlerbehandlung, z.B. Rückgabe eines Fehlers an den Client
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Fehler beim Abrufen der Wetterdaten"})
+			return
+		}
+		// Übergeben der Wetterdaten an das Template
+		c.HTML(http.StatusOK, "weather.html", gin.H{
+			"title":   "Wetter",
+			"weather": weatherData,
 		})
 	})
+
 	// Login
 	router.GET("/login", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "login.html", gin.H{
