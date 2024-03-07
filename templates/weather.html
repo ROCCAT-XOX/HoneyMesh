@@ -1,0 +1,13 @@
+{{ template "header" . }}
+<div class="container-fluid">
+    <div class="row flex-nowrap min-vh-100">
+        {{ template "navbar" . }}
+        <div class="col py-3 offset-md-2 offset-lg-2 offset-xl-1">
+            <h1>{{ .title }}</h1>
+            <div>Temperatur: {{ index .weather "main" "temp" }}</div>
+            <!-- Weitere Wetterdaten hier darstellen -->
+
+        </div>
+    </div>
+</div>
+{{ template "footer" . }}
