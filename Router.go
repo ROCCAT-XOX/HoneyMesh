@@ -153,32 +153,21 @@ func Router(client *mongo.Client, redirectToFirstLogin bool) *gin.Engine {
 		}
 	})
 	router.GET("/home", AuthRequired(), func(c *gin.Context) {
-		c.HTML(http.StatusOK, "home.html", gin.H{
-			"title": "Home",
-		})
-	})
-	router.GET("/dashboard", AuthRequired(), func(c *gin.Context) {
-		weights, err := getLatestWeightForEachNode(client) // Beispiel: Daten der letzten 24 Stunden
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-		c.HTML(http.StatusOK, "dashboard.html", gin.H{
-			"title":   "Dashboard",
-			"weights": weights,
-		})
-	})
-	router.GET("/weather", AuthRequired(), func(c *gin.Context) {
 		weatherData, err := fetchWeatherData()
 		if err != nil {
 			// Fehlerbehandlung, z.B. Rückgabe eines Fehlers an den Client
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Fehler beim Abrufen der Wetterdaten"})
 			return
 		}
-		// Übergeben der Wetterdaten an das Template
-		c.HTML(http.StatusOK, "weather.html", gin.H{
-			"title":   "Wetter",
+		weights, err := getLatestWeightForEachNode(client) // Beispiel: Daten der letzten 24 Stunden
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		c.HTML(http.StatusOK, "home.html", gin.H{
+			"title":   "Home",
 			"weather": weatherData,
+			"weights": weights,
 		})
 	})
 
