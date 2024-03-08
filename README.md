@@ -7,3 +7,5 @@ Das System funktioniert über ein Meshsystem mit einem NodeMaster bestehend aus 
 ## WebUI
 
 Das Webinterface besteht aus mehreren Bereichen
+
+![alt text](https://github.com/ROCCAT-XOX/HoneyMesh/blob/main/assets/profileExample.png?raw=true)
