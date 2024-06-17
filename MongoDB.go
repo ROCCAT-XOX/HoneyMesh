@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -17,12 +18,14 @@ func connectToMongo() (*mongo.Client, error) {
 
 	client, err := mongo.Connect(ctx, clientOptions)
 	if err != nil {
+		fmt.Println("Fehler beim Herstellen der Verbindung zu MongoDB:", err)
 		return nil, err
 	}
 
 	// Überprüfen der Verbindung
 	err = client.Ping(ctx, nil)
 	if err != nil {
+		fmt.Println("Fehler beim Pingen von MongoDB:", err)
 		return nil, err
 	}
 
