@@ -469,8 +469,13 @@
     });
 
     // Load data for initial charts
-    document.addEventListener("DOMContentLoaded", function() {
-        findDataForAvailableTimePeriod(24); // Default to 24 hours
+    // Globale Variable für den aktuell ausgewählten Zeitraum
+    let timeRangeHours = 24;
+
+    // Aktualisiere den Event-Listener für den Zeitraum-Selektor
+    document.getElementById("timePeriodSelect").addEventListener("change", function() {
+        timeRangeHours = parseInt(this.value, 10);
+        findDataForAvailableTimePeriod(timeRangeHours);
     });
 
     function findDataForAvailableTimePeriod(selectedHours) {
@@ -561,6 +566,8 @@
         };
     }
 
+
+
     function initCharts(hours) {
         loadData(hours, 'Weight', 'weightChart');
         loadData(hours, 'TempIn', 'tempInChart');
@@ -569,6 +576,86 @@
         loadData(hours, 'WifiStrength', 'wifiStrengthChart');
     }
 
+    function prepareEChartDataForTimeRange(data, valueKey, hours) {
+        const series = {};
+        const allDates = new Set();
+
+        // Sammle alle Datenpunkte
+        data.forEach(snapshot => {
+            const timestamp = snapshot.Date + ' ' + snapshot.Time;
+            allDates.add(timestamp);
+
+            snapshot.Nodes.forEach(node => {
+                if (!series[node.NodeID]) {
+                    series[node.NodeID] = {
+                        name: 'Node ' + node.NodeID,
+                        type: 'line',
+                        data: [],
+                        smooth: true,
+                        symbol: 'circle',
+                        symbolSize: 6,
+                        lineStyle: {
+                            width: 3
+                        }
+                    };
+                }
+                const value = node[valueKey];
+                if (value !== undefined) {
+                    series[node.NodeID].data.push([timestamp, value]);
+                }
+            });
+        });
+
+        // Sortiere alle Zeitstempel chronologisch
+        const sortedDates = Array.from(allDates).sort();
+
+        // Berechne das Sampling-Intervall basierend auf dem Zeitraum
+        let samplingInterval = 1; // Standardmäßig jeden Punkt anzeigen
+
+        if (hours > 24 && hours <= 48) {
+            samplingInterval = 2; // Jeder zweite Punkt
+        } else if (hours > 48 && hours <= 168) {
+            samplingInterval = 4; // Für eine Woche: jeder vierte Punkt
+        } else if (hours > 168 && hours <= 672) {
+            samplingInterval = 12; // Für einen Monat: jeder zwölfte Punkt
+        } else if (hours > 672) {
+            samplingInterval = 24; // Für mehrere Monate: jeder 24. Punkt
+        }
+
+        // Filtere die Daten basierend auf dem Sampling-Intervall
+        const sampledDates = sortedDates.filter((_, index) => index % samplingInterval === 0);
+
+        // Reduziere die Datenpunkte für jede Datenreihe
+        const sampledSeries = [];
+
+        Object.values(series).forEach(seriesData => {
+            // Erstelle eine Map der Daten nach Zeitstempel für schnellen Zugriff
+            const dataMap = new Map(seriesData.data.map(point => [point[0], point[1]]));
+
+            // Sammle die reduzierten Datenpunkte
+            const sampledData = [];
+            sampledDates.forEach(date => {
+                if (dataMap.has(date)) {
+                    sampledData.push([date, dataMap.get(date)]);
+                }
+            });
+
+            // Nur Serien mit Daten hinzufügen
+            if (sampledData.length > 0) {
+                sampledSeries.push({
+                    ...seriesData,
+                    data: sampledData
+                });
+            }
+        });
+
+        return {
+            series: sampledSeries,
+            xAxisData: sampledDates
+        };
+    }
+
+
     function loadData(hours, valueKey, chartId) {
         fetch(`/data?hours=${hours}`)
             .then(response => response.json())
@@ -576,8 +663,12 @@
                 if (!data || data.length === 0) {
                     document.getElementById(chartId).innerHTML = '<div class="d-flex justify-content-center align-items-center h-100"><p class="text-muted">Keine Daten verfügbar</p></div>';
                 } else {
-                    const { series, xAxisData } = prepareEChartData(data, valueKey);
+                    // Verwende die neue Funktion, die den Zeitraum berücksichtigt
+                    const { series, xAxisData } = prepareEChartDataForTimeRange(data, valueKey, hours);
                     initECharts(series, xAxisData, chartId, valueKey);
+
+                    // Log für Debug-Zwecke
+                    console.log(`Chart ${chartId} für ${hours}h mit ${xAxisData.length} Datenpunkten gerendert`);
                 }
             })
             .catch(error => {
@@ -625,6 +716,10 @@
         });
 
         const myChart = echarts.init(document.getElementById(chartId));
+
+        // Bestimme die Anzahl der Datenpunkte für die x-Achsen-Beschriftung
+        const xAxisLabelInterval = xAxisData.length > 30 ? Math.floor(xAxisData.length / 15) : 0;
+
         const option = {
             title: {
                 text: getChartTitle(valueKey),
@@ -642,9 +737,9 @@
 
                     params.forEach(param => {
                         result += `<div style="display:flex;align-items:center;margin-bottom:3px;">
-                                    <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background-color:${param.color};margin-right:5px;"></span>
-                                    <span>${param.seriesName}: <strong>${param.value[1].toFixed(2)}</strong></span>
-                                   </div>`;
+                                <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background-color:${param.color};margin-right:5px;"></span>
+                                <span>${param.seriesName}: <strong>${param.value[1].toFixed(2)}</strong></span>
+                               </div>`;
                     });
 
                     return result;
@@ -666,18 +761,32 @@
             },
             toolbox: {
                 feature: {
-                    saveAsImage: { title: 'Speichern' }
+                    saveAsImage: { title: 'Speichern' },
+                    dataZoom: { title: 'Zoom' }
                 }
             },
+            dataZoom: [
+                {
+                    type: 'inside',
+                    start: 0,
+                    end: 100
+                },
+                {
+                    type: 'slider',
+                    start: 0,
+                    end: 100
+                }
+            ],
             xAxis: {
                 type: 'category',
                 data: xAxisData,
                 boundaryGap: false,
                 axisLabel: {
                     formatter: function(value) {
-                        return moment(value).format(getXAxisLabelFormat(24));
+                        return moment(value).format(getXAxisLabelFormat(timeRangeHours));
                     },
-                    rotate: 30
+                    rotate: 30,
+                    interval: xAxisLabelInterval
                 }
             },
             yAxis: {
@@ -852,5 +961,6 @@
             }
         });
     });
+
 </script>
 {{ template "footer" . }}

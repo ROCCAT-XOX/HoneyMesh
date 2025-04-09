@@ -7,48 +7,160 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
-
+	"math"
 	"math/rand"
 	"time"
 )
 
-func generateRandomSensorData(currentDate, currentTime string) SensorData {
-	rand.Seed(time.Now().UnixNano())
-
-	var nodes []NodeData
-	for i := 0; i < 5; i++ { // Immer 10 Nodes
-		node := NodeData{
-			NodeID:       fmt.Sprintf("%d", i+1),
-			Weight:       rand.Float64() * 100,
-			TempOut:      rand.Float64()*50 - 10,
-			TempIn:       rand.Float64() * 50,
-			Humidity:     rand.Float64()*40 + 20,
-			AirQuality:   rand.Float64() * 500,
-			WifiStrength: rand.Float64()*80 + 20,
-			Date:         currentDate,
-			Time:         fmt.Sprintf("%sT%s", currentDate, currentTime[:8]), // Nur die ersten 8 Zeichen von currentTime (HH:MM:SS)
-		}
-		nodes = append(nodes, node)
-	}
-
-	return SensorData{
-		Date:  currentDate,
-		Time:  currentTime[:8], // Nur die ersten 8 Zeichen von currentTime (HH:MM:SS)
-		Nodes: nodes,
-	}
-}
-
-func insertSampleData(client *mongo.Client) error {
+// RealisticSensorData erzeugt realistischere Testdaten für die Bienenstöcke
+func insertRealisticSensorData(client *mongo.Client, days int) error {
 	collection := client.Database("HoneyMesh").Collection("data")
 
-	for day := 0; day < 30; day++ {
-		for hour := 0; hour < 24; hour++ {
-			dataTime := time.Now().Add(time.Duration(-day) * 24 * time.Hour).Add(time.Duration(-hour) * time.Hour)
+	// Konstanten für realistische Werte
+	const (
+		baseWeight     = 60.0 // Basis-Gewicht eines Bienenstocks in kg
+		dailyVariation = 0.3  // Tägliche Variation (z.B. durch Nektar/Honig)
+		tempVariation  = 5.0  // Temperaturschwankung im Bienenstock
+		humidityBase   = 65.0 // Durchschnittliche Luftfeuchtigkeit im Bienenstock
+	)
+
+	// Aktuelle Zeit für die Zeitstempel
+	now := time.Now()
+
+	// Generiere zufällige Startwerte für jeden Bienenstock
+	nodeCount := 5
+	nodeWeights := make([]float64, nodeCount)
+	for i := 0; i < nodeCount; i++ {
+		// Jeder Bienenstock hat ein leicht unterschiedliches Startgewicht
+		nodeWeights[i] = baseWeight + rand.Float64()*10.0
+	}
+
+	// Saisonale Faktoren (z.B. Frühling, Sommer haben mehr Nektar)
+	seasonalFactor := func(date time.Time) float64 {
+		// Monat als Float zwischen 0-12
+		month := float64(date.Month())
+
+		// Saisonaler Faktor: höher im Frühling/Sommer (Monate 3-8), niedriger im Herbst/Winter
+		return 1.0 + 0.5*math.Sin((month-3.0)*math.Pi/6.0)
+	}
+
+	// Temperaturmuster basierend auf Tageszeit und Jahreszeit
+	tempPattern := func(date time.Time, isInternal bool) float64 {
+		hour := float64(date.Hour())
+		month := float64(date.Month())
+
+		// Tägliches Muster: wärmer am Tag, kühler in der Nacht
+		dailyPattern := math.Sin((hour - 6.0) * math.Pi / 12.0) // Maximum um 12 Uhr
+
+		// Jahreszeitliches Muster: wärmer im Sommer, kälter im Winter
+		yearlyPattern := math.Sin((month - 3.0) * math.Pi / 6.0) // Maximum im Juli
+
+		if isInternal {
+			// Innentemperatur: bleibt relativ stabil in einem Bienenstock
+			baseTemp := 34.0 // Bienen halten den Stock um 34-35°C
+			return baseTemp + dailyPattern*1.0 + yearlyPattern*2.0
+		} else {
+			// Außentemperatur: folgt stärker dem Tages- und Jahreszyklus
+			baseTemp := 15.0
+			return baseTemp + dailyPattern*8.0 + yearlyPattern*15.0
+		}
+	}
+
+	// Luftfeuchtigkeitsmuster
+	humidityPattern := func(date time.Time) float64 {
+		// Feuchtigkeit variiert mit Temperatur, Tageszeit und Wetter
+		hour := float64(date.Hour())
+		base := humidityBase
+
+		// Feuchter in der Nacht, trockener am Tag
+		dailyVariation := -10.0 * math.Sin((hour-6.0)*math.Pi/12.0)
+
+		// Zufällige Schwankungen für wetterbedingte Änderungen
+		randomVariation := rand.Float64()*10.0 - 5.0
+
+		humid := base + dailyVariation + randomVariation
+		// Begrenze auf realistischen Bereich
+		return math.Max(30.0, math.Min(95.0, humid))
+	}
+
+	// WiFi-Signalstärke simulieren
+	wifiStrengthPattern := func() float64 {
+		// Werte zwischen -30 (sehr gut) und -90 (sehr schwach)
+		baseStrength := -50.0 - rand.Float64()*20.0
+
+		// Zufällige Schwankungen
+		variation := rand.Float64()*10.0 - 5.0
+
+		return baseStrength + variation
+	}
+
+	// Generiere Datenpunkte für jeden Tag mit Stunden-Intervallen
+	for day := 0; day < days; day++ {
+		// Rückwärts von heute
+		currentDate := now.AddDate(0, 0, -day)
+
+		// Wetterbedingte Variation für diesen Tag
+		weatherFactor := rand.Float64()*0.4 + 0.8 // 0.8 bis 1.2
+
+		// Honigzuwachs an produktiven Tagen
+		honeyGrowthToday := rand.Float64() > 0.7 // 30% Chancen für ein produktiven Tag
+
+		for hour := 0; hour < 24; hour += 3 { // Alle 3 Stunden
+			// Aktuelle Zeit für diesen Datenpunkt
+			dataTime := currentDate.Add(time.Duration(-hour) * time.Hour)
 			currentDate := dataTime.Format("2006-01-02")
 			currentTime := dataTime.Format("15:04:05") + fmt.Sprintf("%09d", time.Now().UnixNano()%1e9)
 
-			sensorData := generateRandomSensorData(currentDate, currentTime)
+			// Saisonaler Faktor für diesen Tag
+			seasonFactor := seasonalFactor(dataTime)
 
+			var nodes []NodeData
+			for i := 0; i < nodeCount; i++ {
+				// Leichte Veränderung des Gewichts basierend auf Tageszeit/Saison
+				dailyChange := rand.Float64()*dailyVariation*2.0 - dailyVariation
+
+				// Füge Honig hinzu, wenn es ein produktiver Tag ist
+				honeyBonus := 0.0
+				if honeyGrowthToday && hour >= 8 && hour <= 18 {
+					honeyBonus = 0.05 * seasonFactor // Mehr Honig in produktiven Monaten
+				}
+
+				// Aktualisiere das Gewicht für diesen Bienenstock
+				nodeWeights[i] += dailyChange + honeyBonus
+
+				// Sensorwerte für diesen Bienenstock
+				tempIn := tempPattern(dataTime, true) + rand.Float64()*tempVariation/5.0
+				tempOut := tempPattern(dataTime, false) + rand.Float64()*tempVariation
+				humidity := humidityPattern(dataTime) * weatherFactor
+				airQuality := 100.0 + rand.Float64()*50.0 // Einfacher Wert für Luftqualität
+
+				// Wifi-Signalstärke - nicht abhängig von Wetter/Zeit
+				wifiStrength := wifiStrengthPattern()
+
+				// Node-Daten erstellen
+				node := NodeData{
+					NodeID:       fmt.Sprintf("%d", i+1),
+					Weight:       nodeWeights[i],
+					TempOut:      tempOut,
+					TempIn:       tempIn,
+					Humidity:     humidity,
+					AirQuality:   airQuality,
+					WifiStrength: wifiStrength,
+					Date:         currentDate,
+					Time:         fmt.Sprintf("%sT%s", currentDate, currentTime[:8]),
+				}
+
+				nodes = append(nodes, node)
+			}
+
+			// Sensor-Daten für alle Bienenstöcke zu diesem Zeitpunkt
+			sensorData := SensorData{
+				Date:  currentDate,
+				Time:  currentTime[:8],
+				Nodes: nodes,
+			}
+
+			// In die Datenbank einfügen
 			_, err := collection.InsertOne(context.Background(), sensorData)
 			if err != nil {
 				return err
@@ -57,6 +169,12 @@ func insertSampleData(client *mongo.Client) error {
 	}
 
 	return nil
+}
+
+// Ersetze die bestehende insertSampleData Funktion durch diese
+func insertSampleData(client *mongo.Client) error {
+	// Generiere Daten für die letzten 90 Tage
+	return insertRealisticSensorData(client, 90)
 }
 
 // Abfrage 24h
