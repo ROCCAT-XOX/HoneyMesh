@@ -1,91 +1,490 @@
+
+HoneyMesh /
+Bitte verbessere die READMe.md
+
+I'll help you improve the README.md for your HoneyMesh project. Looking at your codebase, I can see it's a comprehensive monitoring system for beehives using a mesh network of ESP32 devices that collect and display data through a web interface.
+
+
+Improved README.md
+Dokument
+I've created an improved README.md for your HoneyMesh project. The new version:
+
+Has a better structure with clear sections
+Provides a comprehensive overview of your system architecture
+Details both the hardware and software components
+Includes installation instructions for both backend and hardware
+Mentions Docker deployment capabilities
+Improves the visual presentation with centered logo and better formatting
+The README now properly reflects the sophisticated nature of your project - a complete IoT system for beehive monitoring with mesh networking, data collection, storage, and visualization.
+
+You can customize the sections further by adding specific details about your implementation, license information, and contributor details. Would you like me to make any specific adjustments to the README?
+
+Ich brauche die README.md im richtigen Format
+
+I understand you need the README.md in the proper format. Let me provide that for you:
+
+markdown
+# HoneyMesh
+
+<p align="center">
+    <img src="https://github.com/ROCCAT-XOX/HoneyMesh/blob/main/assets/profileExample.png?raw=true" alt="HoneyMesh Logo" width="200"/>
+</p>
+
+HoneyMesh is an advanced IoT system for beehive monitoring using ESP32-based mesh networking and real-time data analysis.
+
+## Overview
+
+HoneyMesh provides beekeepers with comprehensive monitoring capabilities by collecting and visualizing vital beehive data:
+
+- Weight measurements tracking honey production
+- Internal and external temperature readings
+- Humidity and air quality monitoring
+- WiFi signal strength analytics for mesh network optimization
+
+## System Architecture
+
+### Hardware Components
+
+1. **Mesh Nodes**:
+- ESP32/ESP8266 microcontrollers with sensors attached to each beehive
+- Collect and transmit data: weight, temperature (internal/external), humidity, air quality
+- Configured with unique node IDs for identification
+
+2. **Mesh Master**:
+- Dual ESP32 setup (RX/TX configuration)
+- One ESP32 handles mesh network communications (receiving data from nodes)
+- Second ESP32 operates as a web server, exposing data via JSON API
+- Includes OLED display for status monitoring
+
+### Software Components
+
+1. **Backend**:
+- Go-based web server using the Gin framework
+- MongoDB for data storage and querying
+- RESTful API endpoints for data access
+
+2. **Frontend**:
+- Responsive dashboard built with Bootstrap and ECharts
+- Real-time data visualization with trend analysis
+- Time-period selection for historical data viewing
+
+3. **Authentication**:
+- Secure user management system
+- Password hashing with bcrypt
+- Session-based authentication
+
+## Features
+
+- **Real-time Monitoring**: View current beehive metrics through an intuitive dashboard
+- **Trend Analysis**: Track changes in weight, temperature, and other metrics over time
+- **Multi-hive Support**: Monitor multiple beehives from a single interface
+- **Weather Integration**: External weather data correlation with OpenWeatherMap API
+- **Responsive Design**: Mobile-friendly interface for on-the-go monitoring
+
+## Installation
+
+### Prerequisites
+
+- Go 1.19+
+- MongoDB
+- ESP32 development environment (Arduino IDE with ESP32 board support)
+- Network with internet access (for weather data)
+
+### Backend Setup
+
+1. Clone the repository:
+```bash
+git clone https://github.com/ROCCAT-XOX/HoneyMesh.git
+cd HoneyMesh
+Install Go dependencies:
+bash
+go mod download
+Configure MongoDB:
+bash
+# Ensure MongoDB is running
+mongod --dbpath /path/to/data/db
+Start the server:
+bash
+go run main.go
+The server will be available at http://localhost:8080
+Hardware Setup
+Flash the appropriate firmware to your ESP32 devices:
+Use Arduino/ESP32-MeshNode.ino for sensor nodes
+Use Arduino/ESP32-MeshMaster.ino for the mesh master
+Use Arduino/ESP32-with-Webserver.ino for the web server interface
+Configure the WiFi credentials in each sketch
+Deploy the nodes at your beehives
+Docker Deployment
+HoneyMesh can be deployed using Docker for easier management:
+
+bash
+docker compose up -d
+Development
+Project Structure
+main.go: Application entry point
+Router.go: HTTP route definitions
+analytics.go: Data analysis functions
+MongoDB.go: Database connection and operations
+Arduino/: ESP32 firmware files
+templates/: HTML templates for web interface
+License
+[License information]
+
+Contributors
+[Your name/organization]
+
+
+You can copy this markdown code directly and use it as your README.md file. Make sure to fill in the license information and contributor sections with your specific details.
+
+Bitte verbessere die login.html vom Design
+
+I'll improve the design of your login.html file. Let me analyze the current design and make enhancements.
+
+
+Improved login.html
+Interaktives Artefakt
+I've improved the design of your login.html file with a more polished, professional look while maintaining the honey/bee theme. Here are the key improvements:
+
+Design Enhancements
+Customized Tailwind Configuration:
+Added custom colors specifically for your honey theme (honey-gold, honey-dark, honey-light)
+Incorporated Montserrat font family for a more modern look
+Improved Visual Hierarchy:
+Created a header section with a honey gradient background
+Enlarged and highlighted the logo with a white border
+Added a subtitle to clarify the system's purpose
+Enhanced Form Elements:
+Added icons to input fields for better visual cues
+Improved focus states with honey-themed highlights
+Better spacing and padding for improved readability
+Error Handling:
+Styled error messages with a clear red highlight and border
+Better placement and formatting for error visibility
+Background Improvements:
+Added a semi-transparent overlay to the background image for better text contrast
+Applied a subtle hover effect to the login card with a honey-colored shadow
+Responsive Design:
+Maintained full responsiveness for all screen sizes
+Better container sizing and spacing
+Footer Addition:
+Added a simple copyright footer for a more complete look
+Accessibility:
+Improved color contrast for better readability
+Clear labeling of form elements
+Required attribute on inputs
+These improvements create a more cohesive, professional look that better reflects the sophisticated nature of your HoneyMesh system while maintaining the bee/honey theme.
+
+Would you like me to explain any specific part of the design in more detail or make any additional changes?
+
+Bitte verbessere auch die home.html
+
+I'll improve the design of your home.html file. Let me analyze the current design and enhance it for better user experience and visual appeal.
+
+
+Improved home.html
+Interaktives Artefakt
+
+Continue
+
+I'll continue with the improvement of the home.html file. Let me complete the remaining part of the code.
+
+
+Improved home.html
+Interaktives Artefakt ∙ Version 2
+I've completed the improvements to your home.html file. Here's a summary of the enhancements I've made:
+
+Overall Design Improvements
+Modern Visual Style:
+Added custom styling with soft shadows, rounded corners, and hover effects
+Implemented a consistent color scheme based on the honey theme
+Improved card layouts with better spacing and organization
+Improved Navigation:
+Enhanced sidebar with better spacing and hover effects
+Added section headings to improve content organization
+Implemented smooth scrolling for section navigation
+Weather Card Redesign:
+Created a modern weather card with gradient background
+Improved layout with dedicated information boxes
+Better visualization of weather data with cleaner typography
+Dashboard Cards:
+Redesigned node status cards with clear trend indicators
+Better visualization of weight changes with up/down arrows
+Improved layout that adapts to different numbers of nodes
+Chart Improvements:
+Added proper titles and axis labels to all charts
+Improved tooltip formatting for better data reading
+Added responsive chart resizing for all screen sizes
+Implemented better color schemes for data visualization
+Responsive Design:
+Better layout for all screen sizes from mobile to desktop
+Improved spacing and padding for mobile viewing
+Responsive grid system with appropriate breakpoints
+User Experience:
+Better time period selector with clear labeling
+Improved error handling with user-friendly messages
+Added loading indicators and empty state handling
+These improvements create a more professional, user-friendly interface that better showcases your beehive monitoring data while maintaining the honey theme throughout the application. The design is now more consistent with modern web standards and provides a better experience across all devices.
+
+Would you like me to explain any specific aspect of the improvements in more detail?
+
+verbessere bitte auch templates
+
+I'll improve the templates.html file, which contains your base templates used across the application.
+
+
+Improved templates.html
+Interaktives Artefakt
+Now I'll improve the first-login.html template to match the new design system:
+
+
+Improved first-login.html
+Interaktives Artefakt
+Let's also improve the error 404 page:
+
+
+Improved 404.html
+Interaktives Artefakt
+
+
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="HoneyMesh - Erstanmeldung">
+
+    <!-- Favicon -->
     <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png">
     <link rel="mask-icon" href="/assets/safari-pinned-tab.svg" color="#5bbad5">
     <meta name="msapplication-TileColor" content="#da532c">
     <meta name="theme-color" content="#ffffff">
-    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio,line-clamp"></script>
-    <title>{{.title}}</title>
+
+    <title>{{.title}} | HoneyMesh</title>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <script src="https://kit.fontawesome.com/32215a5137.js" crossorigin="anonymous"></script>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --honey-gold: #FFD43B;
+            --honey-gold-dark: #FFC107;
+            --honey-gold-light: #FFE082;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: url('/assets/Backgroundlogin.webp') no-repeat center center;
+            background-size: cover;
+            position: relative;
+        }
+
+        .login-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 1;
+        }
+
+        .login-card {
+            background-color: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            width: 100%;
+            max-width: 450px;
+            z-index: 2;
+            position: relative;
+        }
+
+        .login-header {
+            background: linear-gradient(135deg, var(--honey-gold) 0%, var(--honey-gold-dark) 100%);
+            padding: 2rem;
+            text-align: center;
+            color: white;
+        }
+
+        .login-logo {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 4px solid white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            margin-bottom: 1rem;
+            background-color: white;
+            padding: 4px;
+            object-fit: cover;
+        }
+
+        .login-body {
+            padding: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            display: block;
+            color: #333;
+        }
+
+        .form-control {
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            border: 1px solid #ddd;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus {
+            border-color: var(--honey-gold);
+            box-shadow: 0 0 0 0.25rem rgba(255, 212, 59, 0.25);
+        }
+
+        .input-icon-container {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #aaa;
+            pointer-events: none;
+        }
+
+        .input-icon-field {
+            padding-left: 2.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--honey-gold) 0%, var(--honey-gold-dark) 100%);
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            color: #333;
+            transition: all 0.3s;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            color: #333;
+        }
+
+        .alert {
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .alert-danger {
+            background-color: #f8d7da;
+            border-color: #f5c2c7;
+            color: #842029;
+        }
+
+        .alert-success {
+            background-color: #d1e7dd;
+            border-color: #badbcc;
+            color: #0f5132;
+        }
+    </style>
 </head>
 <body>
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-header">
+            <img src="/assets/profileExample.png" alt="HoneyMesh Logo" class="login-logo">
+            <h2 class="fs-3 fw-bold mb-1">Willkommen bei HoneyMesh</h2>
+            <p class="mb-0 opacity-75">Erstellen Sie Ihren Administrator-Account</p>
+        </div>
 
-
-
-    {{ if .error }}
-    <div class="alert alert-danger" role="alert">
-        {{ .error }}
-    </div>
-    {{ end }}
-
-    {{ if .message }}
-    <div class="alert alert-success" role="alert">
-        {{ .message }}
-    </div>
-    {{ end }}
-    <div class="h-screen flex items-center justify-center bg-[url('/assets/Backgroundlogin.webp')] bg-no-repeat bg-cover bg-center">
-        <div class="p-4 bg-white border border-gray-200 rounded-lg shadow sm:mx-auto sm:w-full sm:max-w-md">
-            <img class="mx-auto h-20 w-auto rounded-full" src="/assets/profileExample.png" alt="Your Company">
-            <h2 class="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">Create an Account</h2>
+        <div class="login-body">
             {{if .error}}
-            <div style="color: red;" class="text-center mb-4">{{.error}}</div>
-            {{end}}
-            <div class="mt-10">
-                <form class="space-y-6" action="/create-user" method="POST">
-                    <input type="hidden" name="origin" value="first-login">
-                    <div>
-                        <label for="username" class="block text-sm font-medium leading-6 text-gray-900">Username</label>
-                        <div class="mt-2">
-                            <input id="username" name="username" type="text" required class="block w-full rounded-md border-gray-300 py-1.5 text-gray-900 placeholder:text-gray-400 focus:ring-indigo-600 sm:text-sm">
-                        </div>
-                    </div>
-
-                    <div>
-                        <label for="password" class="block text-sm font-medium leading-6 text-gray-900">Password</label>
-                        <div class="mt-2">
-                            <input id="password" name="password" type="password" required class="block w-full rounded-md border-gray-300 py-1.5 text-gray-900 placeholder:text-gray-400 focus:ring-indigo-600 sm:text-sm">
-                        </div>
-                    </div>
-
-                    <div>
-                        <label for="confirmPassword" class="block text-sm font-medium leading-6 text-gray-900">Confirm Password</label>
-                        <div class="mt-2">
-                            <input id="confirmPassword" name="confirmPassword" type="password" required class="block w-full rounded-md border-gray-300 py-1.5 text-gray-900 placeholder:text-gray-400 focus:ring-indigo-600 sm:text-sm">
-                        </div>
-                    </div>
-
-                    <div>
-                        <button type="submit" class="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-indigo-600" style="background-color: rgb(255 192 0 / var(--tw-bg-opacity))">Create Account</button>
-                    </div>
-                </form>
+            <div class="alert alert-danger" role="alert">
+                <i class="fas fa-exclamation-circle me-2"></i> {{.error}}
             </div>
+            {{end}}
+
+            {{if .message}}
+            <div class="alert alert-success" role="alert">
+                <i class="fas fa-check-circle me-2"></i> {{.message}}
+            </div>
+            {{end}}
+
+            <h3 class="fs-5 fw-bold mb-4">Konto erstellen</h3>
+
+            <form action="/create-user" method="POST">
+                <input type="hidden" name="origin" value="first-login">
+
+                <div class="form-group">
+                    <label for="username" class="form-label">Benutzername</label>
+                    <div class="input-icon-container">
+                        <i class="fas fa-user input-icon"></i>
+                        <input id="username" name="username" type="text" required
+                               class="form-control input-icon-field"
+                               placeholder="Benutzername eingeben">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="password" class="form-label">Passwort</label>
+                    <div class="input-icon-container">
+                        <i class="fas fa-lock input-icon"></i>
+                        <input id="password" name="password" type="password" required
+                               class="form-control input-icon-field"
+                               placeholder="Passwort eingeben">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmPassword" class="form-label">Passwort bestätigen</label>
+                    <div class="input-icon-container">
+                        <i class="fas fa-lock input-icon"></i>
+                        <input id="confirmPassword" name="confirmPassword" type="password" required
+                               class="form-control input-icon-field"
+                               placeholder="Passwort bestätigen">
+                    </div>
+                </div>
+
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-user-plus me-2"></i> Konto erstellen
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
+</div>
 
-
-<!--
-<form action="/create-user" method="post">
-
-    <input type="hidden" name="origin" value="first-login">
-    <div>
-        <label for="username">Username:</label>
-        <input type="text" id="username" name="username" required>
-    </div>
-    <div>
-        <label for="password">Password:</label>
-        <input type="password" id="password" name="password" required>
-    </div>
-    <div>
-        <label for="confirmPassword">Confirm Password:</label>
-        <input type="password" id="confirmPassword" name="confirmPassword" required>
-    </div>
-    <button type="submit">Create User</button>
-</form>
--->
-
+<!-- Bootstrap JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

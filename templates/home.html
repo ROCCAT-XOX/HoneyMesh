@@ -1,164 +1,410 @@
 {{ template "header" . }}
 
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+    body {
+        font-family: 'Montserrat', sans-serif;
+        background-color: #f8f9fa;
+    }
+
+    .card-shadow {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+    }
+
+    .card-shadow:hover {
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+        transform: translateY(-2px);
+    }
+
+    .card-border-radius {
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .nav-sidebar {
+        background: linear-gradient(180deg, #212529 0%, #343a40 100%);
+        box-shadow: 3px 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .nav-link {
+        border-radius: 8px;
+        margin-bottom: 8px;
+        transition: all 0.2s ease;
+    }
+
+    .nav-link:hover {
+        background-color: rgba(255, 212, 59, 0.1);
+    }
+
+    .honey-color {
+        color: #FFD43B !important;
+    }
+
+    .badge {
+        padding: 0.5em 0.8em;
+        font-weight: 500;
+        border-radius: 6px;
+    }
+
+    .chart-container {
+        height: 400px;
+        width: 100%;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .card-title {
+        font-weight: 600;
+        color: #343a40;
+    }
+
+    .section-heading {
+        font-weight: 700;
+        color: #343a40;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #FFD43B;
+        display: inline-block;
+    }
+
+    .weather-card {
+        background: linear-gradient(135deg, #4b6cb7 0%, #182848 100%);
+        color: white;
+    }
+
+    .weather-icon {
+        font-size: 3rem;
+    }
+
+    .trend-card {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .trend-header {
+        padding: 1rem;
+        border-bottom: 1px solid rgba(0,0,0,0.1);
+        font-weight: 600;
+    }
+
+    .trend-body {
+        display: flex;
+        padding: 1rem;
+        flex-grow: 1;
+        align-items: center;
+    }
+
+    .trend-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+    }
+
+    .trend-icon {
+        font-size: 2rem;
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: #FFD43B;
+        border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: #e6b700;
+    }
+
+    .progress {
+        height: 10px;
+        border-radius: 5px;
+        overflow: hidden;
+        margin-top: 8px;
+    }
+
+    .progress-bar {
+        background-color: #4b6cb7;
+    }
+
+    .filter-controls {
+        background-color: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .form-select {
+        border-radius: 8px;
+        padding: 0.5rem 1rem;
+        border-color: #dee2e6;
+    }
+
+    .form-select:focus {
+        border-color: #FFD43B;
+        box-shadow: 0 0 0 0.25rem rgba(255, 212, 59, 0.25);
+    }
+</style>
 
 <div class="container-fluid">
     <div class="row flex-nowrap min-vh-100">
-        {{ template "navbar" . }}
-        <div class="col py-3 offset-md-2 offset-lg-2 offset-xl-1">
-                <!-- Content -->
-                <div class="row mb-4">
-                    <div class="col-12 d-flex justify-content-center">
-                        <div class="card w-100 card-shadow card-border-radius">
-                            <div class="card-body">
-                                <h5 class="card-title" id="weatherLocation">Wetter in Hockenheim</h5>
-                                <h6 class="card-subtitle mb-2 text-muted" id="weatherDescription">Aktuelles Wetter: Überwiegend bewölkt</h6>
-                                <div class="mb-3">
-                                    <span class="badge bg-primary" id="temperature">Temperatur: --°C</span>
-                                    <span class="badge bg-secondary" id="feelsLike">Gefühlt wie: --°C</span>
-                                    <span class="badge bg-success" id="tempMax">Max: --°C</span>
-                                    <span class="badge bg-danger" id="tempMin">Min: --°C</span>
+        <!-- Improved Sidebar -->
+        <div class="col-auto col-md-2 col-lg-2 col-xl-1 px-sm-2 px-0 nav-sidebar position-fixed">
+            <div class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-4 text-white min-vh-100">
+                <a href="/" class="mx-auto d-flex align-items-center pb-4 mb-md-0 me-md-auto text-white text-decoration-none">
+                    <img class="rounded-circle border border-2 border-white shadow" src="/assets/profileExample.png" width="50" height="50">
+                </a>
+                <p class="d-none d-sm-inline text-center mb-4 fw-bold">HoneyMesh</p>
+                <ul class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-center align-items-sm-start w-100" id="menu">
+                    <li class="nav-item w-100">
+                        <a href="/home" class="nav-link px-3 py-2 d-flex align-items-center">
+                            <i class="fa-regular fa-house fs-5 honey-color"></i>
+                            <span class="ms-2 d-none d-sm-inline">Home</span>
+                        </a>
+                    </li>
+                    <li class="nav-item w-100">
+                        <a href="#temp" class="nav-link px-3 py-2 d-flex align-items-center">
+                            <i class="fa-regular fa-chart-simple fs-5 honey-color"></i>
+                            <span class="ms-2 d-none d-sm-inline">TempIn</span>
+                        </a>
+                    </li>
+                    <li class="nav-item w-100">
+                        <a href="#droplet-percent" class="nav-link px-3 py-2 d-flex align-items-center">
+                            <i class="fa-regular fa-droplet-percent fs-5 honey-color"></i>
+                            <span class="ms-2 d-none d-sm-inline">Air</span>
+                        </a>
+                    </li>
+                    <li class="nav-item w-100">
+                        <a href="#wifi" class="nav-link px-3 py-2 d-flex align-items-center">
+                            <i class="fa-regular fa-wifi fs-5 honey-color"></i>
+                            <span class="ms-2 d-none d-sm-inline">Wifi</span>
+                        </a>
+                    </li>
+                </ul>
+                <hr class="w-100">
+                <div class="dropdown pb-4">
+                    <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle p-2 rounded" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
+                        <img src="/assets/profileExample.png" alt="Admin" width="36" height="36" class="rounded-circle border border-2 border-white">
+                        <span class="d-none d-sm-inline mx-2">User</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark shadow" aria-labelledby="dropdownUser1">
+                        <li><a class="dropdown-item" href="#">Settings</a></li>
+                        <li><a class="dropdown-item" href="/user">User</a></li>
+                        <li><a class="dropdown-item" href="#">Profile</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="/logout">Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="col py-4 px-4 offset-md-2 offset-lg-2 offset-xl-1">
+            <h2 class="section-heading mb-4">Dashboard Overview</h2>
+
+            <!-- Weather Card -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card weather-card card-shadow card-border-radius">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-md-3 text-center">
+                                    <i class="fa-regular fa-cloud-sun weather-icon mb-2"></i>
+                                    <h5 class="card-title mb-0 text-white" id="weatherLocation">Wetter in Hockenheim</h5>
+                                    <p class="text-white-50 mb-0" id="weatherDescription">Aktuelles Wetter: Überwiegend bewölkt</p>
                                 </div>
-                                <div class="mb-3">
-                                    <span class="badge bg-info" id="pressure">Luftdruck: -- hPa</span>
-                                    <span class="badge bg-warning text-dark" id="humidity">Luftfeuchtigkeit: --%</span>
-                                </div>
-                                <div class="mb-3">
-                                    <span class="badge bg-light text-dark" id="windSpeed">Windgeschwindigkeit: -- m/s</span>
-                                    <span class="badge bg-dark" id="windDirection">Windrichtung: --°</span>
-                                </div>
-                                <div class="progress" style="height: 20px;">
-                                    <div class="progress-bar" role="progressbar" id="humidityProgress" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">Luftfeuchtigkeit: --%</div>
+                                <div class="col-md-9">
+                                    <div class="row g-3">
+                                        <div class="col-6 col-lg-3">
+                                            <div class="p-3 bg-white bg-opacity-10 rounded">
+                                                <h6 class="text-white-50 mb-1">Temperatur</h6>
+                                                <h4 class="mb-0 text-white" id="temperature">--°C</h4>
+                                            </div>
+                                        </div>
+                                        <div class="col-6 col-lg-3">
+                                            <div class="p-3 bg-white bg-opacity-10 rounded">
+                                                <h6 class="text-white-50 mb-1">Gefühlt</h6>
+                                                <h4 class="mb-0 text-white" id="feelsLike">--°C</h4>
+                                            </div>
+                                        </div>
+                                        <div class="col-6 col-lg-3">
+                                            <div class="p-3 bg-white bg-opacity-10 rounded">
+                                                <h6 class="text-white-50 mb-1">Feuchtigkeit</h6>
+                                                <h4 class="mb-0 text-white" id="humidity">--%</h4>
+                                            </div>
+                                        </div>
+                                        <div class="col-6 col-lg-3">
+                                            <div class="p-3 bg-white bg-opacity-10 rounded">
+                                                <h6 class="text-white-50 mb-1">Wind</h6>
+                                                <h4 class="mb-0 text-white" id="windSpeed">-- m/s</h4>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mt-3">
+                                        <label class="text-white-50 mb-1">Luftfeuchtigkeit</label>
+                                        <div class="progress bg-white bg-opacity-10">
+                                            <div class="progress-bar bg-info" role="progressbar" id="humidityProgress" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            <div id="ChartCards" class="row justify-content-center">
+            </div>
+
+            <!-- Node Stats Cards -->
+            <h3 class="h5 mb-3">Bienenstöcke Status</h3>
+            <div id="ChartCards" class="row g-3 mb-4">
                 <!-- Node Cards goes here -->
             </div>
 
-            <div class="row mb-4">
-                <div class="col-3">
-                    <select id="timePeriodSelect" class="form-select">
-                        <option value="1">Letzte Stunde</option>
-                        <option value="12">Letzte 12 Stunden</option>
-                        <option value="24">Letzte 24 Stunden</option>
-                        <option value="48">Letzte 48 Stunden</option>
-                        <option value="168">Letzte 7 Tage</option>
-                        <option value="672">Letzte 30 Tage</option>
-                        <option value="1344">Letzte 2 Monate</option>
-                        <option value="2016">Letzte 3 Monate</option>
-                        <option value="4032">Letzte 6 Monate</option>
-                    </select>
-
-                </div>
-            </div>
-
-            <div class="row mb-4">
-                <div class="col-6">
-
-                </div>
-                <div class="col-6">
-                    <div class="card w-100 card-shadow card-border-radius">
-                        <div id="WeightPerNode" style="width: 100%; height: 400px;"></div>
-                    </div>
-                </div>
-            </div>
+            <!-- Filter Controls -->
             <div class="row mb-4">
                 <div class="col-12">
-                    <div class="card w-100 card-shadow card-border-radius">
-                        <div class="card-body">
-                            <div id="weightChart" style="height:400px;"></div>
+                    <div class="filter-controls">
+                        <div class="row align-items-center">
+                            <div class="col-md-4">
+                                <label for="timePeriodSelect" class="form-label fw-medium mb-2">Zeitraum auswählen:</label>
+                                <select id="timePeriodSelect" class="form-select">
+                                    <option value="1">Letzte Stunde</option>
+                                    <option value="12">Letzte 12 Stunden</option>
+                                    <option value="24" selected>Letzte 24 Stunden</option>
+                                    <option value="48">Letzte 48 Stunden</option>
+                                    <option value="168">Letzte 7 Tage</option>
+                                    <option value="672">Letzte 30 Tage</option>
+                                    <option value="1344">Letzte 2 Monate</option>
+                                    <option value="2016">Letzte 3 Monate</option>
+                                    <option value="4032">Letzte 6 Monate</option>
+                                </select>
+                            </div>
+                            <div class="col-md-8 d-flex justify-content-md-end mt-3 mt-md-0">
+                                <!-- Additional filter controls can go here -->
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div id="temp" class="row mb-4">
-                <div class="col-12">
-                    <div class="card w-100 card-shadow card-border-radius">
-                        <div class="card-title p-3">
-                            <p>Temperatur im Stock</p>
-                        </div>
-                        <div class="card-body">
-                            <div id="tempInChart" style="height:400px;"></div>
-                        </div>
 
+            <!-- Weight Overview -->
+            <h3 class="h5 mb-3">Gewicht nach Bienenstock</h3>
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <div class="card card-shadow card-border-radius">
+                        <div class="card-body">
+                            <div id="WeightPerNode" class="chart-container"></div>
+                        </div>
                     </div>
                 </div>
             </div>
+
+            <!-- Weight Chart -->
+            <h3 class="h5 mb-3">Gewichtsentwicklung</h3>
             <div class="row mb-4">
                 <div class="col-12">
-                    <div class="card w-100 card-shadow card-border-radius">
-                        <div class="card-title p-3">
-                            <p>Temperatur Außen</p>
-                        </div>
+                    <div class="card card-shadow card-border-radius">
                         <div class="card-body">
-                            <div id="tempOutChart" style=";height:400px;"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div id="droplet-percent" class="row mb-4">
-                <div class="col-12">
-                    <div class="card w-100 card-shadow card-border-radius">
-                        <div class="card-title p-3">
-                            <p>Luftfeuchtigkeit</p>
-                        </div>
-                        <div class="card-body">
-                            <div id="humidityChart" style="height:400px;"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div id="wifi" class="row mb-4">
-                <div class="col-12">
-                    <div class="card w-100 card-shadow card-border-radius">
-                        <div class="card-title p-3">
-                            <p>Wifi</p>
-                        </div>
-                        <div class="card-body">
-                            <div id="wifiStrengthChart" style="height:400px;"></div>
+                            <div id="weightChart" class="chart-container"></div>
                         </div>
                     </div>
                 </div>
             </div>
 
+            <!-- Temperature Inside Chart -->
+            <div id="temp" class="pt-3">
+                <h3 class="h5 mb-3">Temperatur im Stock</h3>
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card card-shadow card-border-radius">
+                            <div class="card-body">
+                                <div id="tempInChart" class="chart-container"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Temperature Outside Chart -->
+            <h3 class="h5 mb-3">Außentemperatur</h3>
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card card-shadow card-border-radius">
+                        <div class="card-body">
+                            <div id="tempOutChart" class="chart-container"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Humidity Chart -->
+            <div id="droplet-percent" class="pt-3">
+                <h3 class="h5 mb-3">Luftfeuchtigkeit</h3>
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card card-shadow card-border-radius">
+                            <div class="card-body">
+                                <div id="humidityChart" class="chart-container"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- WiFi Chart -->
+            <div id="wifi" class="pt-3">
+                <h3 class="h5 mb-3">WLAN-Signalstärke</h3>
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card card-shadow card-border-radius">
+                            <div class="card-body">
+                                <div id="wifiStrengthChart" class="chart-container"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
-<!-- Weather -->
+
+<!-- Weather Script -->
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        // Beispiel-JSON-Daten
-        const weatherData = {{.weather}};;
+        // Weather data
+        const weatherData = {{.weather}};
 
-        // Werte in die HTML-Elemente einfügen
+        // Update weather elements
         document.getElementById('weatherLocation').textContent = `Wetter in ${weatherData.name}`;
-        document.getElementById('weatherDescription').textContent = `Aktuelles Wetter: ${weatherData.weather[0].description}`;
-        document.getElementById('temperature').textContent = `Temperatur: ${weatherData.main.temp}°C`;
-        document.getElementById('feelsLike').textContent = `Gefühlt wie: ${weatherData.main.feels_like}°C`;
-        document.getElementById('tempMax').textContent = `Max: ${weatherData.main.temp_max}°C`;
-        document.getElementById('tempMin').textContent = `Min: ${weatherData.main.temp_min}°C`;
-        document.getElementById('pressure').textContent = `Luftdruck: ${weatherData.main.pressure} hPa`;
-        document.getElementById('humidity').textContent = `Luftfeuchtigkeit: ${weatherData.main.humidity}%`;
-        document.getElementById('windSpeed').textContent = `Windgeschwindigkeit: ${weatherData.wind.speed} m/s`;
-        document.getElementById('windDirection').textContent = `Windrichtung: ${weatherData.wind.deg}°`;
+        document.getElementById('weatherDescription').textContent = `${weatherData.weather[0].description}`;
+        document.getElementById('temperature').textContent = `${weatherData.main.temp}°C`;
+        document.getElementById('feelsLike').textContent = `${weatherData.main.feels_like}°C`;
+        document.getElementById('humidity').textContent = `${weatherData.main.humidity}%`;
+        document.getElementById('windSpeed').textContent = `${weatherData.wind.speed} m/s`;
 
-        // Luftfeuchtigkeits-Fortschrittsbalken aktualisieren
+        // Update humidity progress bar
         const humidityProgress = document.getElementById('humidityProgress');
         humidityProgress.style.width = `${weatherData.main.humidity}%`;
         humidityProgress.setAttribute('aria-valuenow', weatherData.main.humidity);
-        humidityProgress.textContent = `Luftfeuchtigkeit: ${weatherData.main.humidity}%`;
     });
-
 </script>
-<!-- Dashboard -->
+
+<!-- Dashboard Scripts -->
 <script>
+    // Time period select event handler
     document.getElementById("timePeriodSelect").addEventListener("change", function() {
-        const hours = parseInt(this.value, 10); // Stellen Sie sicher, dass der Wert als Zahl interpretiert wird
-        findDataForAvailableTimePeriod(hours); // Rufen Sie die Funktion mit dem ausgewählten Zeitraum auf
+        const hours = parseInt(this.value, 10);
+        findDataForAvailableTimePeriod(hours);
     });
 
+    // Initialize node weight chart
     var weightsData = {{.weights}};
     document.addEventListener("DOMContentLoaded", function() {
         var myChart = echarts.init(document.getElementById('WeightPerNode'));
@@ -167,87 +413,118 @@
                 trigger: 'axis',
                 axisPointer: { type: 'shadow' }
             },
+            grid: {
+                left: '3%',
+                right: '4%',
+                bottom: '3%',
+                containLabel: true
+            },
             xAxis: {
                 type: 'category',
-                data: weightsData.map(function(item) { return 'Node ' + item._id; })
+                data: weightsData.map(function(item) { return 'Node ' + item._id; }),
+                axisLabel: {
+                    interval: 0,
+                    rotate: 30
+                }
             },
             yAxis: {
-                type: 'value'
+                type: 'value',
+                name: 'Gewicht (kg)'
             },
             series: [{
                 data: weightsData.map(function(item) { return item.latestWeight; }),
-                type: 'bar'
+                type: 'bar',
+                itemStyle: {
+                    color: new echarts.graphic.LinearGradient(
+                        0, 0, 0, 1,
+                        [
+                            {offset: 0, color: '#FFD54F'},
+                            {offset: 1, color: '#FFC000'}
+                        ]
+                    )
+                },
+                emphasis: {
+                    itemStyle: {
+                        color: new echarts.graphic.LinearGradient(
+                            0, 0, 0, 1,
+                            [
+                                {offset: 0, color: '#FFC000'},
+                                {offset: 1, color: '#D9A400'}
+                            ]
+                        )
+                    }
+                },
+                showBackground: true,
+                backgroundStyle: {
+                    color: 'rgba(180, 180, 180, 0.1)'
+                }
             }]
         };
         myChart.setOption(option);
+
+        // Handle resize for responsive chart
+        window.addEventListener('resize', function() {
+            myChart.resize();
+        });
     });
 
-
-
+    // Load data for initial charts
     document.addEventListener("DOMContentLoaded", function() {
-        findDataForAvailableTimePeriod(); // Entfernen Sie den Parameter, um die Standardlogik zu verwenden
+        findDataForAvailableTimePeriod(24); // Default to 24 hours
     });
 
     function findDataForAvailableTimePeriod(selectedHours) {
-        const timePeriods = [1, 12, 24, 48, 168, 672, 1344, 2016, 4032]; // Stunden
+        const timePeriods = [1, 12, 24, 48, 168, 672, 1344, 2016, 4032];
 
         function checkDataAvailability(index) {
             if (index >= timePeriods.length) {
                 console.error('Keine Daten in verfügbaren Zeitperioden gefunden.');
-                document.getElementById(chartId).textContent = 'Aktuell keine Werte vorhanden.';
                 return;
             }
 
-            const hours = timePeriods[index];
-            if (selectedHours && selectedHours !== hours) {
-                // Wenn ein spezifischer Zeitraum ausgewählt wurde, überspringen Sie die Prüfung und verwenden Sie diesen Zeitraum direkt
-                loadData(selectedHours, 'Weight', 'weightChart');
-                return;
-            }
+            const hours = selectedHours || timePeriods[index];
 
             fetch(`/data?hours=${hours}`)
                 .then(response => response.json())
                 .then(data => {
                     if (!data || data.length === 0) {
-                        // Keine Daten gefunden, nächsten Zeitraum überprüfen
+                        // No data found, check next time period
                         checkDataAvailability(index + 1);
                     } else {
-                        // Daten gefunden, Charts initialisieren
+                        // Data found, initialize charts
                         initCharts(hours);
+
+                        // Set the select value to match the period used
+                        if (selectedHours) {
+                            document.getElementById('timePeriodSelect').value = selectedHours.toString();
+                        } else {
+                            document.getElementById('timePeriodSelect').value = hours.toString();
+                        }
+
+                        // Calculate and display trends
+                        loadDataForTrendAnalysis(Math.max(hours, 336), 'Weight');
                     }
                 })
                 .catch(error => {
-                    console.error('Fehler beim Laden der Daten:', error);
-                    // Bei Fehler, nächsten Zeitraum überprüfen
+                    console.error('Error loading data:', error);
                     checkDataAvailability(index + 1);
                 });
         }
 
-        if (selectedHours) {
-            // Wenn ein spezifischer Zeitraum ausgewählt wurde, verwenden Sie diesen direkt
-            checkDataAvailability(timePeriods.indexOf(selectedHours));
-        } else {
-            // Starte mit dem kürzesten Zeitraum, wenn kein spezifischer Zeitraum ausgewählt wurde
-            checkDataAvailability(0);
-        }
+        checkDataAvailability(timePeriods.indexOf(selectedHours) >= 0 ? timePeriods.indexOf(selectedHours) : 0);
     }
 
     function getXAxisLabelFormat(hours) {
         if (hours <= 24) {
-            // Weniger als oder gleich 24 Stunden: Zeige Uhrzeit
             return 'HH:mm';
         } else if (hours <= 168) {
-            // Weniger als oder gleich 7 Tage: Zeige Tag im Monat
-            return 'MM-DD';
+            return 'MM-DD HH:mm';
         } else if (hours <= 672) {
-            // Weniger als oder gleich 30 Tage: Zeige Tag und Monat
             return 'MM-DD';
         } else {
-            // Mehr als 30 Tage: Zeige Monat und Jahr
             return 'YYYY-MM';
         }
     }
-
 
     function prepareEChartData(data, valueKey) {
         const series = {};
@@ -263,7 +540,12 @@
                         name: 'Node ' + node.NodeID,
                         type: 'line',
                         data: [],
-                        smooth: true
+                        smooth: true,
+                        symbol: 'circle',
+                        symbolSize: 6,
+                        lineStyle: {
+                            width: 3
+                        }
                     };
                 }
                 const value = node[valueKey];
@@ -279,14 +561,12 @@
         };
     }
 
-
     function initCharts(hours) {
         loadData(hours, 'Weight', 'weightChart');
         loadData(hours, 'TempIn', 'tempInChart');
         loadData(hours, 'TempOut', 'tempOutChart');
         loadData(hours, 'Humidity', 'humidityChart');
         loadData(hours, 'WifiStrength', 'wifiStrengthChart');
-        document.getElementById('timePeriodSelect').value = hours.toString();
     }
 
     function loadData(hours, valueKey, chartId) {
@@ -294,118 +574,234 @@
             .then(response => response.json())
             .then(data => {
                 if (!data || data.length === 0) {
-                    document.getElementById(chartId).textContent = 'Aktuell keine Werte vorhanden.';
+                    document.getElementById(chartId).innerHTML = '<div class="d-flex justify-content-center align-items-center h-100"><p class="text-muted">Keine Daten verfügbar</p></div>';
                 } else {
-
                     const { series, xAxisData } = prepareEChartData(data, valueKey);
-                    initECharts(series, xAxisData, chartId);
-
+                    initECharts(series, xAxisData, chartId, valueKey);
                 }
             })
             .catch(error => {
-                console.error('Fehler beim Laden der Daten:', error);
-                document.getElementById(chartId).textContent = 'Fehler beim Laden der Daten.';
+                console.error('Error loading data:', error);
+                document.getElementById(chartId).innerHTML = '<div class="d-flex justify-content-center align-items-center h-100"><p class="text-danger">Fehler beim Laden der Daten</p></div>';
             });
     }
 
+    function getChartTitle(valueKey) {
+        switch(valueKey) {
+            case 'Weight': return 'Gewichtsentwicklung';
+            case 'TempIn': return 'Temperatur im Stock';
+            case 'TempOut': return 'Außentemperatur';
+            case 'Humidity': return 'Luftfeuchtigkeit';
+            case 'WifiStrength': return 'WLAN-Signalstärke';
+            default: return '';
+        }
+    }
 
-    function initECharts(seriesData, xAxisData, chartId) {
+    function getYAxisName(valueKey) {
+        switch(valueKey) {
+            case 'Weight': return 'Gewicht (kg)';
+            case 'TempIn':
+            case 'TempOut': return 'Temperatur (°C)';
+            case 'Humidity': return 'Feuchtigkeit (%)';
+            case 'WifiStrength': return 'Signalstärke (dBm)';
+            default: return '';
+        }
+    }
+
+    function initECharts(seriesData, xAxisData, chartId, valueKey) {
+        const chartColors = [
+            '#FFD43B', '#36A2EB', '#FF6384', '#4BC0C0', '#9966FF',
+            '#FF9F40', '#FFCD56', '#C9CBCF', '#7950f2', '#fa5252'
+        ];
+
+        seriesData.forEach((series, index) => {
+            series.lineStyle = {
+                color: chartColors[index % chartColors.length],
+                width: 3
+            };
+            series.itemStyle = {
+                color: chartColors[index % chartColors.length]
+            };
+        });
+
         const myChart = echarts.init(document.getElementById(chartId));
         const option = {
-            tooltip: { trigger: 'axis' },
-            xAxis: { type: 'category', data: xAxisData },
-            yAxis: { type: 'value' },
+            title: {
+                text: getChartTitle(valueKey),
+                left: 'center',
+                textStyle: {
+                    fontWeight: 'normal',
+                    fontSize: 16
+                }
+            },
+            tooltip: {
+                trigger: 'axis',
+                formatter: function(params) {
+                    const date = params[0].axisValue;
+                    let result = `<div style="margin-bottom:5px;font-weight:bold;">${date}</div>`;
+
+                    params.forEach(param => {
+                        result += `<div style="display:flex;align-items:center;margin-bottom:3px;">
+                                    <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background-color:${param.color};margin-right:5px;"></span>
+                                    <span>${param.seriesName}: <strong>${param.value[1].toFixed(2)}</strong></span>
+                                   </div>`;
+                    });
+
+                    return result;
+                }
+            },
+            legend: {
+                data: seriesData.map(item => item.name),
+                top: 30,
+                type: 'scroll',
+                textStyle: {
+                    color: '#666'
+                }
+            },
+            grid: {
+                left: '3%',
+                right: '4%',
+                bottom: '3%',
+                containLabel: true
+            },
+            toolbox: {
+                feature: {
+                    saveAsImage: { title: 'Speichern' }
+                }
+            },
+            xAxis: {
+                type: 'category',
+                data: xAxisData,
+                boundaryGap: false,
+                axisLabel: {
+                    formatter: function(value) {
+                        return moment(value).format(getXAxisLabelFormat(24));
+                    },
+                    rotate: 30
+                }
+            },
+            yAxis: {
+                type: 'value',
+                name: getYAxisName(valueKey),
+                nameLocation: 'middle',
+                nameGap: 40,
+                nameTextStyle: {
+                    fontWeight: 'bold'
+                },
+                splitLine: {
+                    lineStyle: {
+                        type: 'dashed'
+                    }
+                }
+            },
             series: seriesData
         };
 
         myChart.setOption(option);
+
+        // Handle resize for responsive chart
+        window.addEventListener('resize', function() {
+            myChart.resize();
+        });
     }
 
-     function calculateAverageWeightAndTrend(data) {
-        // Teilen Sie die Daten in zwei Hälften für die Trendanalyse
+    function calculateAverageWeightAndTrend(data) {
+        // Clear previous node cards
+        document.getElementById('ChartCards').innerHTML = '';
+
+        // Split data for trend analysis
         const halfIndex = Math.floor(data.length / 2);
         const firstHalfData = data.slice(0, halfIndex);
         const secondHalfData = data.slice(halfIndex);
-         const totalNodes = Object.keys(data[0].Nodes).length;
 
-        // Berechnen Sie Durchschnittsgewichte für jede Hälfte
+        // Count unique nodes
+        const allNodeIds = new Set();
+        data.forEach(snapshot => {
+            snapshot.Nodes.forEach(node => {
+                allNodeIds.add(node.NodeID);
+            });
+        });
+        const totalNodes = allNodeIds.size;
+
+        // Calculate average weights
         const averageWeightsFirstHalf = calculateAverageWeightsPerNode(firstHalfData);
         const averageWeightsSecondHalf = calculateAverageWeightsPerNode(secondHalfData);
 
-        // Analysieren Sie den Trend für jedes Node
-        Object.keys(averageWeightsFirstHalf).forEach(nodeId => {
-            const avgFirstHalf = averageWeightsFirstHalf[nodeId];
-            const avgSecondHalf = averageWeightsSecondHalf[nodeId] || avgFirstHalf; // Fallback auf Ersthalbjahr, falls kein Wert vorhanden
-            const trend = avgSecondHalf > avgFirstHalf ? 'Aufwärtstrend' : 'Abwärtstrend';
+        // Create trend cards for each node
+        allNodeIds.forEach(nodeId => {
+            const avgFirstHalf = averageWeightsFirstHalf[nodeId] || 0;
+            const avgSecondHalf = averageWeightsSecondHalf[nodeId] || avgFirstHalf;
+            const trendPercentage = ((avgSecondHalf - avgFirstHalf) / (avgFirstHalf || 1)) * 100;
+            const trend = avgSecondHalf > avgFirstHalf ? 'up' : 'down';
 
-            console.log(`Node ${nodeId}: Durchschnittsgewicht Anfangsperiode: ${avgFirstHalf.toFixed(2)}, Durchschnittsgewicht Endperiode: ${avgSecondHalf.toFixed(2)}, Trend: ${trend}`);
+            createNodeCard(nodeId, trendPercentage, trend, totalNodes, avgSecondHalf);
         });
-         Object.keys(averageWeightsFirstHalf).forEach(nodeId => {
-             const avgFirstHalf = averageWeightsFirstHalf[nodeId];
-             const avgSecondHalf = averageWeightsSecondHalf[nodeId] || avgFirstHalf;
-             const trend = avgSecondHalf > avgFirstHalf ? 'Aufwärtstrend' : 'Abwärtstrend';
-             const trendPercentage = ((avgSecondHalf - avgFirstHalf) / avgFirstHalf) * 100;
-
-             createNodeCard(nodeId, trendPercentage, trend, totalNodes); // Übergibt totalNodes als Parameter
-         });
     }
 
-    function createNodeCard(nodeId, trendPercentage, trend, totalNodes) {
+    function createNodeCard(nodeId, trendPercentage, trend, totalNodes, currentWeight) {
         const cardContainer = document.getElementById('ChartCards');
 
-        // Berechnet die Bootstrap "col-*" Klasse basierend auf der Anzahl der Nodes
-        let colClass = '';
-        switch(totalNodes) {
-            case 2:
-                colClass = 'col-6';
-                break;
-            case 3:
-                colClass = 'col-4';
-                break;
-            case 4:
-                colClass = 'col-3';
-                break;
-            default:
-                colClass = 'col-2'; // Standardwert für mehr als 4 Nodes
+        // Determine column class based on node count
+        let colClass = 'col-md-3';
+        if (totalNodes <= 2) {
+            colClass = 'col-md-6';
+        } else if (totalNodes <= 3) {
+            colClass = 'col-md-4';
+        } else if (totalNodes >= 6) {
+            colClass = 'col-md-2';
         }
 
         const cardColumn = document.createElement('div');
-        cardColumn.className = `${colClass} mb-4`; // Fügt margin-bottom für den Abstand zwischen Karten hinzu
+        cardColumn.className = `${colClass} mb-3`;
 
         const card = document.createElement('div');
-        card.className = 'card w-100 card-shadow card-border-radius';
+        card.className = 'card trend-card card-shadow card-border-radius h-100';
 
-        const cardTitleDiv = document.createElement('div');
-        cardTitleDiv.className = 'card-title p-3 mb-0';
-        const cardTitle = document.createElement('span');
-        cardTitle.textContent = `Node ${nodeId}`;
-        cardTitleDiv.appendChild(cardTitle);
+        // Card header with node name
+        const cardHeader = document.createElement('div');
+        cardHeader.className = 'trend-header';
+        cardHeader.textContent = `Bienenstock ${nodeId}`;
 
-        const rowDiv = document.createElement('div');
-        rowDiv.className = 'row';
-
-        const col6BodyDiv = document.createElement('div');
-        col6BodyDiv.className = 'col-6';
+        // Card body with trend info
         const cardBody = document.createElement('div');
-        cardBody.className = 'card-body';
-        const pText = document.createElement('p');
-        pText.className = `card-text ${trend === 'Aufwärtstrend' ? 'text-success' : 'text-danger'}`;
-        pText.textContent = `${trendPercentage.toFixed(2)}%`;
-        cardBody.appendChild(pText);
-        col6BodyDiv.appendChild(cardBody);
+        cardBody.className = 'trend-body';
 
-        const col6IconDiv = document.createElement('div');
-        col6IconDiv.className = 'col-6 d-flex align-items-center justify-content-center';
+        // Left column for value
+        const valueCol = document.createElement('div');
+        valueCol.className = 'col-7';
+
+        const weight = document.createElement('div');
+        weight.className = 'mb-2 text-muted small';
+        weight.textContent = 'Aktuelles Gewicht';
+
+        const weightValue = document.createElement('div');
+        weightValue.className = 'mb-3 trend-value';
+        weightValue.textContent = `${currentWeight.toFixed(2)} kg`;
+
+        const trendText = document.createElement('div');
+        trendText.className = `${trend === 'up' ? 'text-success' : 'text-danger'} fs-6`;
+        trendText.textContent = `${Math.abs(trendPercentage).toFixed(1)}%`;
+        trendText.innerHTML += ` <span class="text-muted small">${trend === 'up' ? 'Zunahme' : 'Abnahme'}</span>`;
+
+        valueCol.appendChild(weight);
+        valueCol.appendChild(weightValue);
+        valueCol.appendChild(trendText);
+
+        // Right column for icon
+        const iconCol = document.createElement('div');
+        iconCol.className = 'col-5 text-center';
+
         const trendIcon = document.createElement('i');
-        trendIcon.className = `fa-2xl fa-regular ${trend === 'Aufwärtstrend' ? 'fa-arrow-up-right text-success' : 'fa-arrow-down text-danger'}`;
-        trendIcon.setAttribute('aria-hidden', 'true');
-        col6IconDiv.appendChild(trendIcon);
+        trendIcon.className = `trend-icon fa-regular ${trend === 'up' ? 'fa-arrow-up-right text-success' : 'fa-arrow-down text-danger'}`;
 
-        rowDiv.appendChild(col6BodyDiv);
-        rowDiv.appendChild(col6IconDiv);
+        iconCol.appendChild(trendIcon);
 
-        card.appendChild(cardTitleDiv);
-        card.appendChild(rowDiv);
+        // Assemble card
+        cardBody.appendChild(valueCol);
+        cardBody.appendChild(iconCol);
+
+        card.appendChild(cardHeader);
+        card.appendChild(cardBody);
 
         cardColumn.appendChild(card);
         cardContainer.appendChild(cardColumn);
@@ -436,20 +832,25 @@
         try {
             const response = await fetch(`/data?hours=${hours}`);
             const data = await response.json();
-            calculateAverageWeightAndTrend(data);
+            if (data && data.length > 0) {
+                calculateAverageWeightAndTrend(data);
+            } else {
+                console.log('No data available for trend analysis');
+            }
         } catch (error) {
-            console.error('Fehler beim Laden der Daten:', error);
+            console.error('Error loading trend data:', error);
         }
     }
 
-    // Initialer Aufruf der Funktion mit 336 Stunden für 14 Tage Trendanalyse
-    loadDataForTrendAnalysis(336, 'Weight');
-
-
-
-
-
-
+    // Register resize listeners for all charts
+    window.addEventListener('resize', function() {
+        const charts = document.querySelectorAll('.chart-container');
+        charts.forEach(function(chartContainer) {
+            const chart = echarts.getInstanceByDom(chartContainer);
+            if (chart) {
+                chart.resize();
+            }
+        });
+    });
 </script>
 {{ template "footer" . }}
-

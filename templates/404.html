@@ -3,37 +3,208 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="HoneyMesh - Seite nicht gefunden">
+
+    <!-- Favicon -->
     <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png">
     <link rel="mask-icon" href="/assets/safari-pinned-tab.svg" color="#5bbad5">
     <meta name="msapplication-TileColor" content="#da532c">
     <meta name="theme-color" content="#ffffff">
-    <title>{{.title}}</title>
-    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio,line-clamp"></script>
+
+    <title>{{.title}} | HoneyMesh</title>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <script src="https://kit.fontawesome.com/32215a5137.js" crossorigin="anonymous"></script>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --honey-gold: #FFD43B;
+            --honey-gold-dark: #FFC107;
+            --honey-dark: #212529;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f8f9fa;
+            padding: 20px;
+        }
+
+        .error-container {
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .error-card {
+            background-color: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            padding: 2rem;
+        }
+
+        .error-heading {
+            font-weight: 700;
+            font-size: 2.5rem;
+            color: var(--honey-dark);
+            margin-bottom: 1rem;
+            position: relative;
+            display: inline-block;
+        }
+
+        .error-heading::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 80px;
+            height: 4px;
+            background: var(--honey-gold);
+            border-radius: 2px;
+        }
+
+        .error-text {
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 2rem;
+            max-width: 600px;
+        }
+
+        .btn-honey {
+            background: linear-gradient(135deg, var(--honey-gold) 0%, var(--honey-gold-dark) 100%);
+            border: none;
+            border-radius: 8px;
+            padding: 12px 30px;
+            font-weight: 600;
+            color: #333;
+            transition: all 0.3s;
+        }
+
+        .btn-honey:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(255, 193, 7, 0.3);
+        }
+
+        .error-image-container {
+            position: relative;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .error-code {
+            font-size: 12rem;
+            font-weight: 800;
+            position: absolute;
+            opacity: 0.05;
+            color: var(--honey-dark);
+            line-height: 1;
+        }
+
+        .honeycomb {
+            position: relative;
+            z-index: 1;
+            max-width: 100%;
+            height: auto;
+        }
+
+        @media (max-width: 991.98px) {
+            .error-code {
+                font-size: 8rem;
+            }
+
+            .error-heading {
+                font-size: 2rem;
+            }
+
+            .error-image-container {
+                margin-top: 2rem;
+            }
+        }
+
+        @media (max-width: 767.98px) {
+            .error-code {
+                font-size: 6rem;
+            }
+        }
+
+        .btn-link {
+            color: var(--honey-gold-dark);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-link:hover {
+            color: var(--honey-gold);
+            text-decoration: underline;
+        }
+
+        .honey-icon {
+            color: var(--honey-gold);
+            margin-right: 10px;
+        }
+    </style>
 </head>
 <body>
-<div class="lg:px-24 lg:py-24 md:py-20 md:px-44 px-4 py-24 items-center flex justify-center flex-col-reverse lg:flex-row md:gap-28 gap-16">
-    <div class="xl:pt-24 w-full xl:w-1/2 relative pb-12 lg:pb-0">
-        <div class="relative">
-            <div class="absolute">
-                <div class="">
-                    <h1 class="my-2 text-gray-800 font-bold text-2xl">
-                        Ich glaube du hast dich leider verklickt,
-                        hier ist nichts
-                    </h1>
-                    <p class="my-2 text-gray-800">Tut mir leid, bitte geh zurück zu Home</p>
-                    <button onclick="window.location.href='/home';" class="sm:w-full lg:w-auto my-2 border rounded md py-4 px-8 text-center bg-indigo-600 text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-700 focus:ring-opacity-50">Zurück zu Home</button>
+<div class="error-container">
+    <div class="error-card">
+        <div class="row g-0 align-items-center">
+            <div class="col-lg-6">
+                <h1 class="error-heading">Oops! Seite nicht gefunden</h1>
+                <p class="error-text">
+                    Die gesuchte Seite existiert nicht oder wurde möglicherweise verschoben.
+                    Vielleicht haben Sie sich bei der URL vertippt?
+                </p>
+
+                <div class="mb-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="fas fa-arrow-right honey-icon"></i>
+                        <span>Überprüfen Sie die URL in Ihrer Adressleiste</span>
+                    </div>
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="fas fa-arrow-right honey-icon"></i>
+                        <span>Kehren Sie zur Startseite zurück</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-arrow-right honey-icon"></i>
+                        <span>Kontaktieren Sie den Administrator, falls das Problem weiterhin besteht</span>
+                    </div>
+                </div>
+
+                <div class="d-flex flex-wrap gap-3">
+                    <a href="/home" class="btn btn-honey">
+                        <i class="fas fa-home me-2"></i> Zurück zur Startseite
+                    </a>
+                    <a href="javascript:history.back()" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i> Zurück
+                    </a>
                 </div>
             </div>
-            <div>
-                <img src="https://i.ibb.co/G9DC8S0/404-2.png" />
+
+            <div class="col-lg-6">
+                <div class="error-image-container">
+                    <div class="error-code">404</div>
+                    <img src="https://i.ibb.co/ck1SGFJ/Group.png" alt="404 Error" class="honeycomb img-fluid">
+                </div>
             </div>
         </div>
     </div>
-    <div>
-        <img src="https://i.ibb.co/ck1SGFJ/Group.png" />
-    </div>
 </div>
+
+<!-- Bootstrap JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
