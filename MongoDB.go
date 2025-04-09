@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -10,26 +9,29 @@ import (
 	"time"
 )
 
-// Funktion zum Herstellen einer Verbindung mit MongoDB
+// Original function kept for backward compatibility
 func connectToMongo() (*mongo.Client, error) {
-	clientOptions := options.Client().ApplyURI("mongodb://localhost:27017")
+	return connectToMongoWithURI("mongodb://localhost:27017")
+}
+
+// New function that accepts a URI parameter
+func connectToMongoWithURI(uri string) (*mongo.Client, error) {
+	clientOptions := options.Client().ApplyURI(uri)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	client, err := mongo.Connect(ctx, clientOptions)
 	if err != nil {
-		fmt.Println("Fehler beim Herstellen der Verbindung zu MongoDB:", err)
 		return nil, err
 	}
 
-	// Überprüfen der Verbindung
+	// Check the connection
 	err = client.Ping(ctx, nil)
 	if err != nil {
-		fmt.Println("Fehler beim Pingen von MongoDB:", err)
 		return nil, err
 	}
 
-	log.Println("Erfolgreich mit MongoDB verbunden.")
+	log.Println("Successfully connected to MongoDB.")
 	return client, nil
 }
 
@@ -41,13 +43,13 @@ func ensureUserCollectionExists(client *mongo.Client) (bool, error) {
 	}
 	for _, collectionName := range collections {
 		if collectionName == "users" {
-			return true, nil // Collection existiert bereits
+			return true, nil // Collection already exists
 		}
 	}
-	// Collection existiert nicht, also erstellen
+	// Collection doesn't exist, so create it
 	err = db.CreateCollection(context.Background(), "users")
 	if err != nil {
 		return false, err
 	}
-	return false, nil // Collection wurde neu erstellt
+	return false, nil // Collection was newly created
 }

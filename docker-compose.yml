@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: honeymesh-app
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017
+      - GENERATE_SAMPLE_DATA=true
+      - TZ=Europe/Berlin
+    depends_on:
+      - mongodb
+    networks:
+      - honeymesh-network
+
+  mongodb:
+    image: mongo:latest
+    container_name: honeymesh-mongodb
+    restart: unless-stopped
+    volumes:
+      - mongodb-data:/data/db
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_DATABASE=HoneyMesh
+    networks:
+      - honeymesh-network
+
+networks:
+  honeymesh-network:
+    driver: bridge
+
+volumes:
+  mongodb-data:
+    driver: local

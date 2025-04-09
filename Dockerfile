@@ -1,58 +1,39 @@
-# Build stage
-FROM golang:1.22.4 AS builder
+FROM golang:1.23-alpine AS builder
 
-# Set the Current Working Directory inside the container
-WORKDIR /HoneyMesh
+WORKDIR /app
 
-# Copy go mod and sum files
+# Install necessary build tools
+RUN apk add --no-cache gcc musl-dev
+
+# Copy go.mod and go.sum and download dependencies first (for better caching)
 COPY go.mod go.sum ./
-
-# Download all dependencies. Dependencies will be cached if the go.mod and go.sum files are not changed
-RUN go mod tidy
 RUN go mod download
 
-# Copy the source from the current directory to the Working Directory inside the container
+# Copy the rest of the application code
 COPY . .
 
-# Build the Go app
-RUN go build -o main .
+# Build the application
+RUN CGO_ENABLED=1 GOOS=linux go build -o honeymesh .
 
-COPY ./assets /HoneyMesh/assets
-COPY ./templates /HoneyMesh/templates
+# Use a smaller image for the final container
+FROM alpine:latest
 
-# Use Ubuntu as base image for the final stage
-FROM ubuntu:22.04
+WORKDIR /app
 
-# Install necessary tools
-RUN apt-get update && \
-    apt-get install -y wget gnupg2 lsb-release netcat bash
+# Install runtime dependencies
+RUN apk --no-cache add ca-certificates tzdata
 
-# Add MongoDB repository
-RUN wget -qO - https://www.mongodb.org/static/pgp/server-6.0.asc | apt-key add - && \
-    echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu $(lsb_release -cs)/mongodb-org/6.0 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-6.0.list
+# Copy the binary from the builder stage
+COPY --from=builder /app/honeymesh /app/honeymesh
+# Copy template files and assets
+COPY --from=builder /app/templates /app/templates
+COPY --from=builder /app/assets /app/assets
 
-# Install MongoDB
-RUN apt-get update && \
-    apt-get install -y mongodb-org
+# Set environment variables
+ENV GIN_MODE=release
 
-# Set the Current Working Directory inside the container
-WORKDIR /HoneyMesh
+# Expose the application port
+EXPOSE 8080
 
-# Copy the Pre-built binary file from the previous stage
-COPY --from=builder /HoneyMesh/main .
-
-COPY ./assets /HoneyMesh/assets
-COPY ./templates /HoneyMesh/templates
-
-# Create directory for MongoDB data
-RUN mkdir -p /data/db
-
-# Expose ports 8080 and 27017
-EXPOSE 8080 27017
-
-# Copy and run start script
-COPY start.sh /start.sh
-RUN chmod +x /start.sh
-
-# Command to run the start script
-CMD ["/start.sh"]
+# Run the application
+CMD ["/app/honeymesh"]

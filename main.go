@@ -2,44 +2,53 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
+	"os"
+	"strings"
 )
 
 func main() {
-	client, err := connectToMongo()
+	// Use environment variable for MongoDB URI if set
+	mongoURI := "mongodb://localhost:27017"
+	if uri := os.Getenv("MONGODB_URI"); uri != "" {
+		mongoURI = uri
+	}
+
+	// Connect to MongoDB using the URI
+	client, err := connectToMongoWithURI(mongoURI)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer client.Disconnect(context.Background())
 
-	err = insertSampleData(client)
-	if err != nil {
-		fmt.Println("Fehler beim Einfügen von Sample-Daten:", err)
-		return
+	// Check if we should generate sample data
+	if genData := os.Getenv("GENERATE_SAMPLE_DATA"); strings.ToLower(genData) == "true" {
+		log.Println("Generating sample data...")
+		err = insertSampleData(client)
+		if err != nil {
+			log.Printf("Error inserting sample data: %v", err)
+		} else {
+			log.Println("Sample data successfully generated")
+		}
 	}
 
-	// Überprüfen, ob die User-Collection existiert und Benutzer enthält
+	// Check if the User-Collection exists and contains users
 	userColExists, err := ensureUserCollectionExists(client)
 	if err != nil {
-		log.Fatalf("Fehler bei der Prüfung der User-Collection: %v", err)
+		log.Fatalf("Error checking user collection: %v", err)
 	}
 	var redirectToFirstLogin bool
 	if userColExists {
 		userExists, err := userExists(client)
 		if err != nil {
-			log.Fatalf("Fehler bei der Überprüfung auf vorhandene Benutzer: %v", err)
+			log.Fatalf("Error checking for existing users: %v", err)
 		}
-		redirectToFirstLogin = !userExists // Umleitung zu /first-login, wenn keine Benutzer vorhanden sind
+		redirectToFirstLogin = !userExists // Redirect to /first-login if no users exist
 	} else {
-		redirectToFirstLogin = true // Umleitung zu /first-login, wenn die Collection neu erstellt wurde
+		redirectToFirstLogin = true // Redirect to /first-login if the collection was newly created
 	}
 
+	// Set up the router and start the web server
 	router := Router(client, redirectToFirstLogin)
 	router.Run(":8080")
-
-	//setupPeriodicTask(client)
-
-	// Beispieldaten einfügen
-
 }

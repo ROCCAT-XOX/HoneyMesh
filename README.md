@@ -92,9 +92,9 @@ HoneyMesh provides beekeepers with comprehensive monitoring capabilities by coll
 ### Hardware Setup
 
 1. Flash the appropriate firmware to your ESP32 devices:
-    - Use `Arduino/ESP32-MeshNode.ino` for sensor nodes
-    - Use `Arduino/ESP32-MeshMaster.ino` for the mesh master
-    - Use `Arduino/ESP32-with-Webserver.ino` for the web server interface
+   - Use `Arduino/ESP32-MeshNode.ino` for sensor nodes
+   - Use `Arduino/ESP32-MeshMaster.ino` for the mesh master
+   - Use `Arduino/ESP32-with-Webserver.ino` for the web server interface
 
 2. Configure the WiFi credentials in each sketch
 3. Deploy the nodes at your beehives
@@ -103,8 +103,80 @@ HoneyMesh provides beekeepers with comprehensive monitoring capabilities by coll
 
 HoneyMesh can be deployed using Docker for easier management:
 
+### Prerequisites
+
+- [Docker](https://docs.docker.com/get-docker/)
+- [Docker Compose](https://docs.docker.com/compose/install/)
+
+### Getting Started
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/ROCCAT-XOX/HoneyMesh.git
+   cd HoneyMesh
+   ```
+
+2. Copy the example environment file:
+   ```bash
+   cp .env-example .env
+   ```
+
+3. Edit the `.env` file to configure your settings:
+   ```
+   # Set to true to generate sample data on startup
+   GENERATE_SAMPLE_DATA=true
+   ```
+
+4. Build and start the containers:
+   ```bash
+   docker-compose up -d
+   ```
+
+5. Access the application at http://localhost:8080
+
+### Configuration
+
+#### Environment Variables
+
+- `GENERATE_SAMPLE_DATA`: Set to `true` to generate sample data when the application starts.
+- `MONGODB_URI`: MongoDB connection URI (defaults to `mongodb://mongodb:27017` in the compose file).
+
+#### Volumes
+
+The MongoDB data is stored in a named volume `mongodb-data` to persist your database between container restarts.
+
+### Troubleshooting
+
+#### Checking Logs
+
+To view logs for the containers:
+
 ```bash
-docker compose up -d
+# View logs for the app container
+docker-compose logs app
+
+# View logs for the MongoDB container
+docker-compose logs mongodb
+
+# Follow logs in real-time
+docker-compose logs -f
+```
+
+#### MongoDB Shell Access
+
+To access the MongoDB shell:
+
+```bash
+docker exec -it honeymesh-mongodb mongosh
+```
+
+#### Restarting Services
+
+To restart specific services:
+
+```bash
+docker-compose restart app
+docker-compose restart mongodb
 ```
 
 ## Development
@@ -117,6 +189,9 @@ docker compose up -d
 - `MongoDB.go`: Database connection and operations
 - `Arduino/`: ESP32 firmware files
 - `templates/`: HTML templates for web interface
+- `Dockerfile`: Defines how the Go application container is built
+- `docker-compose.yml`: Orchestrates the application and database containers
+- `.env`: Contains environment variables for configuring the application
 
 ## License
 
@@ -125,5 +200,3 @@ docker compose up -d
 ## Contributors
 
 [Promedia GmbH]
-
-```
