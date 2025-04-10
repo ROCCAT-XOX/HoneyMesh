@@ -10,7 +10,7 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - MONGODB_URI=mongodb://mongodb:27017
+      - MONGODB_URI=mongodb://honeymesh-mongodb:27017
       - GENERATE_SAMPLE_DATA=true
       - TZ=Europe/Berlin
     depends_on:
